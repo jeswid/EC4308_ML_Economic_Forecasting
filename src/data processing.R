@@ -1,20 +1,8 @@
----
-title: "Data Processing"
-author: "EC4308 Group Project"
-date: "`r Sys.Date()`"
-output: html_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-```{r}
 library(tidyverse)
-df = load("data/complete_data_df.RData")
-```
+load("data/complete_data_df.RData")
 
-```{r}
+df = complete_data_df
+
 #our prediction horizon is t = 1, 3, 6 months
 h1 = 1
 h2 = 3
@@ -25,9 +13,7 @@ h3 = 6
 df <- df %>%  mutate(across(-DATE, ~ lag(.x, n = h1), .names = "lag_{col}"))
 df <- df %>%  mutate(across(-DATE, ~ lag(.x, n = h2), .names = "la_{col}"))
 df <- df %>%  mutate(across(-DATE, ~ lag(.x, n = h3), .names = "la_{col}"))
-```
 
-```{r}
 #now generate bull and bear variables based on Bry-Bosch algorithm in the Nyberg 2013 paper
 
 # Load necessary libraries
@@ -88,14 +74,4 @@ bull_bear <- c(rep(NA, length(prices) - length(bull_bear)), bull_bear)
 
 # 8. Add the computed market state to the original dataframe
 df$market_state <- bull_bear
-
-# Print the first few rows to verify the result
-print(head(df, 10))
-```
-```{r}
-#strategy evaluation code
-
-```
-
-
 
