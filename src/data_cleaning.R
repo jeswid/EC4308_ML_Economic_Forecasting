@@ -8,6 +8,7 @@ library(missMDA)
 library(RANN)
 library(hdm)
 library(ggplot2)
+library("writexl")
 
 # load datasets
 df_stock_price = read_excel("data/ie_data.xls",sheet = 'Data',skip = 7)
@@ -144,7 +145,7 @@ complete_data_df$DATE = df_date
 
 print(complete_data_df$DATE)
 
-write.csv(complete_data_df, file = "data/complete_data_pca.csv")
+write_xlsx(complete_data_df, "complete_data_pca.xlsx")
 
 #################### in case u wanna impute using quarterly / yearly data ###############################
 # join stock_returns monthly, quarterly, yearly datasets
