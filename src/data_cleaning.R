@@ -3,6 +3,7 @@ rm(list = ls())
 
 # load required packages
 library(readxl)
+library(readr)
 library(dplyr)
 library(missMDA)
 library(RANN)
@@ -145,7 +146,8 @@ complete_data_df$DATE = df_date
 
 print(complete_data_df$DATE)
 
-write_xlsx(complete_data_df, "complete_data_pca.xlsx")
+#write_xlsx(complete_data_df, "complete_data_pca.xlsx")
+save(complete_data_df, file = "complete_data_df.RData")
 
 #################### in case u wanna impute using quarterly / yearly data ###############################
 # join stock_returns monthly, quarterly, yearly datasets
