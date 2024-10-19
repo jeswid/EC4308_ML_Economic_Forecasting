@@ -1,5 +1,5 @@
 library(tidyverse)
-load("data/complete_data_df.RData")
+readRDS("complete_data_df.RDS")
 
 df = complete_data_df
 
@@ -7,12 +7,23 @@ df = complete_data_df
 h1 = 1
 h2 = 3
 h3 = 6
+h4 = 12
 
-#first need to create lags for all the variables used (except for DATE)
 # Create lagged variables for all columns except Date
-df <- df %>%  mutate(across(-DATE, ~ lag(.x, n = h1), .names = "lag_{col}"))
-df <- df %>%  mutate(across(-DATE, ~ lag(.x, n = h2), .names = "la_{col}"))
-df <- df %>%  mutate(across(-DATE, ~ lag(.x, n = h3), .names = "la_{col}"))
+df <- df %>%
+  mutate(across(-DATE, ~ lag(.x, n = h1), .names = "lag1_{col}")) 
+
+# Create lag3 variables excluding lag1 variables
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag1_")), ~ lag(.x, n = h2), .names = "lag3_{col}")) 
+
+# Create lag6 variables excluding lag1 and lag3 variables
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag1_"), starts_with("lag3_")), ~ lag(.x, n = h3), .names = "lag6_{col}"))
+
+# Create lag12 variables excluding lag1 and lag3 variables
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag")), ~ lag(.x, n = h4), .names = "lag12_{col}")) 
 
 #now generate bull and bear variables based on Bry-Bosch algorithm in the Nyberg 2013 paper
 
@@ -75,3 +86,4 @@ bull_bear <- c(rep(NA, length(prices) - length(bull_bear)), bull_bear)
 # 8. Add the computed market state to the original dataframe
 df$market_state <- bull_bear
 
+saveRDS(df, "final_cleaned_data.RDS")
