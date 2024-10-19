@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
-df = complete_data_df
+df = load("data/complete_data_df.RData")
 ```
 
 ```{r}
