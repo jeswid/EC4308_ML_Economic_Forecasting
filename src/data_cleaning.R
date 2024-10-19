@@ -6,12 +6,15 @@ library(readxl)
 library(dplyr)
 library(mice)
 library(caret)
+library(missMDA)
 library(RANN)
 library(hdm)
 
 # load datasets
 df_stock_price = read_excel("data/ie_data.xls",sheet = 'Data',skip = 7)
-df_stock_returns = read_excel("data/Data2023.xlsx",sheet = 'Monthly')
+df_stock_returns_monthly = read_excel("data/Data2023.xlsx",sheet = 'Monthly')
+df_stock_returns_quarterly = read_excel("data/Data2023.xlsx",sheet = 'Quarterly')
+df_stock_returns_yearly = read_excel("data/Data2023.xlsx",sheet = 'Annual')
 df_unemployment_rate = read.csv("data/UNRATE.csv")
 df_term_spread = read.csv("data/T10Y3M.csv")
 df_federal_funds_rate = read.csv("data/DFF.csv")
@@ -55,8 +58,8 @@ df_stock_price =  df_stock_price %>%
   ) %>%
   select (-c(Fraction,...14,...16))
 
-# convert each value in df_stock_returns$yyyymm to YYYY-MM-DD format
-df_stock_returns$yyyymm <- sapply(df_stock_returns$yyyymm, function(x) {
+# convert each value in df_stock_returns_monthly$yyyymm to YYYY-MM-DD format
+df_stock_returns_monthly$yyyymm <- sapply(df_stock_returns_monthly$yyyymm, function(x) {
   x <- as.character(x)  # Convert to character to manipulate string
   year <- substr(x, 1, 4)  # Extract the first 4 characters as year
   month <- substr(x, 5, 6)  # Extract the last 2 characters as month
@@ -64,13 +67,48 @@ df_stock_returns$yyyymm <- sapply(df_stock_returns$yyyymm, function(x) {
   as.Date(date_string)  # Convert to Date
 })
 # convert sapply result back to a Date column in data frame
-df_stock_returns$yyyymm <- as.Date(df_stock_returns$yyyymm)
-# rename df_stock_returns columns
-df_stock_returns =  df_stock_returns %>% 
+df_stock_returns_monthly$yyyymm <- as.Date(df_stock_returns_monthly$yyyymm)
+# rename df_stock_returns_monthly columns
+df_stock_returns_monthly =  df_stock_returns_monthly %>% 
   rename(
-    DATE = yyyymm
+    DATE = yyyymm,
+    dividend_price_ratio = `d/p`,
+    dividend_yield = `d/y`,
+    earnings_price_ratio = `e/p`,
+    dividend_payout = `d/e`,
+    book_market = `b/m`
   ) %>%
   select (-c(price,d12,e12))
+
+# join stock_returns monthly, quarterly, yearly datasets
+# Convert Quarter and Month to Date for easier manipulation
+#df_stock_returns_quarterly$yyyyq <- sapply(df_stock_returns_quarterly$yyyyq,function(x) {
+#  year <- floor(x / 10)  # Extract the year part
+#  quarter <- x %% 10  # Extract the quarter part
+  # Determine the starting month of the quarter
+#  month <- (quarter - 1) * 3 + 1 # 1 for Q1, 4 for Q2, 7 for Q3, 10 for Q4
+ # date_string <- sprintf("%04d-%02d-01", year, month)  # Set day as the 1st of the month
+#  as.Date(date_string)  # Convert to Date
+#})
+# convert sapply result back to a Date column in data frame
+#df_stock_returns_quarterly$yyyyq <- as.Date(df_stock_returns_quarterly$yyyyq)
+# rename df_stock_returns_quarterly columns
+#df_stock_returns_quarterly =  df_stock_returns_quarterly %>% 
+#  rename(
+#    DATE = yyyyq,
+#    dividend_price_ratio = `d/p`,
+ #   dividend_yield = `d/y`,
+ #   earnings_price_ratio = `e/p`,
+ #   dividend_payout = `d/e`,
+ #   book_market = `b/m`
+#  ) %>%
+#  select (-c(price,d12,e12))
+# impute monthly data with quarterly data
+#monthly_data_imputed <- df_stock_returns_monthly %>%
+ # left_join(df_stock_returns_quarterly, by = "DATE", suffix = c("", ".quarterly")) %>%  # Join on Date
+ # mutate(cay = ifelse(is.na(cay), cay.quarterly, cay)) %>%                 # Impute missing values
+  #select(DATE, cay)  # Select only the relevant columns
+
 
 # convert to date type
 df_unemployment_rate$DATE <- as.Date(df_unemployment_rate$DATE)
@@ -82,7 +120,7 @@ df_inflation_rate$DATE <- as.Date(df_inflation_rate$DATE)
 df_industrial_production_growth_rate$DATE <- as.Date(df_industrial_production_growth_rate$DATE)
 
 # join datasets
-df = left_join(df_stock_price,df_stock_returns, by = "DATE") %>%
+df = left_join(df_stock_price,df_stock_returns_monthly, by = "DATE") %>%
   left_join(.,df_unemployment_rate, by='DATE') %>%
   left_join(.,df_term_spread, by='DATE') %>%
   left_join(.,df_federal_funds_rate, by='DATE') %>%
@@ -91,7 +129,32 @@ df = left_join(df_stock_price,df_stock_returns, by = "DATE") %>%
   left_join(.,df_inflation_rate, by='DATE') %>%
   left_join(.,df_industrial_production_growth_rate, by='DATE')
 
+# standardize the data
+df_temp = na.omit(df_stock_price)
+# Convert factor or character columns to numeric (if appropriate)
+# df_temp <- df_temp %>% mutate_if(is.factor, as.numeric) %>% mutate_if(is.character, as.numeric)
+# Select only numeric columns
+numeric_df <- df_temp[, sapply(df_temp, is.numeric)]  # Remove the non-numeric column
+
+# principal component analysis 
+pca_result <- prcomp(numeric_df, center = TRUE, scale. = TRUE)
+# Check the PCA result
+summary(pca_result)  
+# Get the proportion of varian
+
 # impute missing values
+# Check the data types of columns
+# sapply(df, class)
+# Convert factor or character columns to numeric (if appropriate)
+# df <- df %>% mutate_if(is.factor, as.numeric) %>% mutate_if(is.character, as.numeric)
+# Select only numeric columns
+# numeric_df <- df[, sapply(df, is.numeric)]
+# Perform PCA imputation
+# pca_imputed_data <- imputePCA(numeric_df, ncp = 20)  # ncp = number of principal components
+# Get the completed dataset
+# complete_data <- pca_imputed_data$completeObs
+# Check the imputed data
+# print(complete_data)
 
 # logistic regression
 logit_model <- glm(am ~ mpg + hp + wt, data = mtcars, family = binomial(link = "logit"))
