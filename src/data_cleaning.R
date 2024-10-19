@@ -144,7 +144,7 @@ complete_data_df$DATE = df_date
 
 print(complete_data_df$DATE)
 
-write.csv(complete_data_df, file = "../data/complete_data_pca.csv")
+write.csv(complete_data_df, file = "data/complete_data_pca.csv")
 
 #################### in case u wanna impute using quarterly / yearly data ###############################
 # join stock_returns monthly, quarterly, yearly datasets
