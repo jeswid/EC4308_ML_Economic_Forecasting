@@ -4,11 +4,10 @@ rm(list = ls())
 # load required packages
 library(readxl)
 library(dplyr)
-library(mice)
-library(caret)
 library(missMDA)
 library(RANN)
 library(hdm)
+library(ggplot2)
 
 # load datasets
 df_stock_price = read_excel("data/ie_data.xls",sheet = 'Data',skip = 7)
@@ -66,6 +65,7 @@ df_stock_returns_monthly$yyyymm <- sapply(df_stock_returns_monthly$yyyymm, funct
   date_string <- paste0(year, "-", month, "-01")  # Combine into YYYY-MM-DD format
   as.Date(date_string)  # Convert to Date
 })
+
 # convert sapply result back to a Date column in data frame
 df_stock_returns_monthly$yyyymm <- as.Date(df_stock_returns_monthly$yyyymm)
 # rename df_stock_returns_monthly columns
@@ -79,36 +79,6 @@ df_stock_returns_monthly =  df_stock_returns_monthly %>%
     book_market = `b/m`
   ) %>%
   select (-c(price,d12,e12))
-
-# join stock_returns monthly, quarterly, yearly datasets
-# Convert Quarter and Month to Date for easier manipulation
-#df_stock_returns_quarterly$yyyyq <- sapply(df_stock_returns_quarterly$yyyyq,function(x) {
-#  year <- floor(x / 10)  # Extract the year part
-#  quarter <- x %% 10  # Extract the quarter part
-  # Determine the starting month of the quarter
-#  month <- (quarter - 1) * 3 + 1 # 1 for Q1, 4 for Q2, 7 for Q3, 10 for Q4
- # date_string <- sprintf("%04d-%02d-01", year, month)  # Set day as the 1st of the month
-#  as.Date(date_string)  # Convert to Date
-#})
-# convert sapply result back to a Date column in data frame
-#df_stock_returns_quarterly$yyyyq <- as.Date(df_stock_returns_quarterly$yyyyq)
-# rename df_stock_returns_quarterly columns
-#df_stock_returns_quarterly =  df_stock_returns_quarterly %>% 
-#  rename(
-#    DATE = yyyyq,
-#    dividend_price_ratio = `d/p`,
- #   dividend_yield = `d/y`,
- #   earnings_price_ratio = `e/p`,
- #   dividend_payout = `d/e`,
- #   book_market = `b/m`
-#  ) %>%
-#  select (-c(price,d12,e12))
-# impute monthly data with quarterly data
-#monthly_data_imputed <- df_stock_returns_monthly %>%
- # left_join(df_stock_returns_quarterly, by = "DATE", suffix = c("", ".quarterly")) %>%  # Join on Date
- # mutate(cay = ifelse(is.na(cay), cay.quarterly, cay)) %>%                 # Impute missing values
-  #select(DATE, cay)  # Select only the relevant columns
-
 
 # convert to date type
 df_unemployment_rate$DATE <- as.Date(df_unemployment_rate$DATE)
@@ -129,6 +99,8 @@ df = left_join(df_stock_price,df_stock_returns_monthly, by = "DATE") %>%
   left_join(.,df_inflation_rate, by='DATE') %>%
   left_join(.,df_industrial_production_growth_rate, by='DATE')
 
+df_date <- df %>% select(DATE)
+
 # standardize the data
 df_temp = na.omit(df_stock_price)
 # Convert factor or character columns to numeric (if appropriate)
@@ -140,27 +112,66 @@ numeric_df <- df_temp[, sapply(df_temp, is.numeric)]  # Remove the non-numeric c
 pca_result <- prcomp(numeric_df, center = TRUE, scale. = TRUE)
 # Check the PCA result
 summary(pca_result)  
-# Get the proportion of varian
+# Get the proportion of variance
+
+#plot the screeplot
+results = pca_result
+var_explained = results$sdev^2 / sum(results$sdev^2)
+#choose 4 PCs
+
+#create scree plot
+qplot(c(1:16), var_explained) + 
+  geom_line() +   xlab("Principal Component") + 
+  ylab("Variance Explained") +
+  ggtitle("Scree Plot") +
+  ylim(0, 1)
 
 # impute missing values
 # Check the data types of columns
 # sapply(df, class)
 # Convert factor or character columns to numeric (if appropriate)
-# df <- df %>% mutate_if(is.factor, as.numeric) %>% mutate_if(is.character, as.numeric)
+df <- df %>% mutate_if(is.factor, as.numeric) %>% mutate_if(is.character, as.numeric)
 # Select only numeric columns
-# numeric_df <- df[, sapply(df, is.numeric)]
+numeric_df <- df[, sapply(df, is.numeric)]
 # Perform PCA imputation
-# pca_imputed_data <- imputePCA(numeric_df, ncp = 20)  # ncp = number of principal components
+pca_imputed_data <- imputePCA(numeric_df, ncp = 4)  # ncp = number of principal components
 # Get the completed dataset
-# complete_data <- pca_imputed_data$completeObs
-# Check the imputed data
-# print(complete_data)
+complete_data <- pca_imputed_data$completeObs
+complete_data_df = as.data.frame(complete_data)
 
-# logistic regression
-logit_model <- glm(am ~ mpg + hp + wt, data = mtcars, family = binomial(link = "logit"))
-# display summary of the model
-summary(logit_model)
+#join the date column
+complete_data_df$DATE = df_date
 
-# logistic LASSO regression
+print(complete_data_df$DATE)
 
-# 
+write.csv(complete_data_df, file = "../data/complete_data_pca.csv")
+
+#################### in case u wanna impute using quarterly / yearly data ###############################
+# join stock_returns monthly, quarterly, yearly datasets
+# Convert Quarter and Month to Date for easier manipulation
+#df_stock_returns_quarterly$yyyyq <- sapply(df_stock_returns_quarterly$yyyyq,function(x) {
+#  year <- floor(x / 10)  # Extract the year part
+#  quarter <- x %% 10  # Extract the quarter part
+# Determine the starting month of the quarter
+#  month <- (quarter - 1) * 3 + 1 # 1 for Q1, 4 for Q2, 7 for Q3, 10 for Q4
+# date_string <- sprintf("%04d-%02d-01", year, month)  # Set day as the 1st of the month
+#  as.Date(date_string)  # Convert to Date
+#})
+# convert sapply result back to a Date column in data frame
+#df_stock_returns_quarterly$yyyyq <- as.Date(df_stock_returns_quarterly$yyyyq)
+# rename df_stock_returns_quarterly columns
+#df_stock_returns_quarterly =  df_stock_returns_quarterly %>% 
+#  rename(
+#    DATE = yyyyq,
+#    dividend_price_ratio = `d/p`,
+#   dividend_yield = `d/y`,
+#   earnings_price_ratio = `e/p`,
+#   dividend_payout = `d/e`,
+#   book_market = `b/m`
+#  ) %>%
+#  select (-c(price,d12,e12))
+# impute monthly data with quarterly data
+#monthly_data_imputed <- df_stock_returns_monthly %>%
+# left_join(df_stock_returns_quarterly, by = "DATE", suffix = c("", ".quarterly")) %>%  # Join on Date
+# mutate(cay = ifelse(is.na(cay), cay.quarterly, cay)) %>%                 # Impute missing values
+#select(DATE, cay)  # Select only the relevant columns

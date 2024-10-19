@@ -1,0 +1,27 @@
+---
+title: "Data Processing"
+author: "EC4308 Group Project"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+data = read_csv("../data/complete_data_pca.csv")
+```
+
+
+```{r}
+#our prediction horizon is t = 1, 3, 6 months
+h1 = 1
+h2 = 3
+h3 = 6
+
+#first need to create lags for all the variables used (except for DATE)
+
+
+```
+
