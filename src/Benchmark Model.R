@@ -1,8 +1,10 @@
 # Set seed for reproducibility
 set.seed(42)
 
-data = readRDS("final_cleaned_data.RDS") %>%
-  mutate(DATE = as.Date(DATE))
+data = readRDS("final_cleaned_data.RDS")
+
+data$date = data$DATE$DATE
+
 
 # Stratified Sampling by 'market_state'
 strata_cols <- c("market_state")
@@ -25,8 +27,8 @@ validation_data <- remaining_data %>%
 # Test set (10%)
 test_data <- anti_join(remaining_data, validation_data)
 test_data_date = test_data %>%
-  select(DATE)
-test_df = as.data.frame(test_data_date)
+  select(date)
+test_df_date = as.data.frame(test_data_date)
 
 # Check the sizes of the datasets
 cat("Training set size:", nrow(train_data), "\n")
@@ -44,10 +46,9 @@ summary(logit_h1)
 # making predictions
 predicted_prob_logit_h1 = predict(logit_h1, newdata = test_data, type = "response")
 predicted_prob_logit_h1_df = as.data.frame(predicted_prob_logit_h1) %>%
-  add_column(test_data_date$DATE) %>%
-  mutate(date = "DATE")
+  add_column(test_df_date) 
 
-data = left_join(data,predicted_prob_logit_h1_df,by = "DATE")
+data = left_join(data,predicted_prob_logit_h1_df,by = "date")
 
 #logistic regression for h3
 logit_h3 <- glm(market_state ~  tms + lag3_ret + infl + lty, data = train_data, family = binomial(link = "logit"))
@@ -55,6 +56,10 @@ logit_h3 <- glm(market_state ~  tms + lag3_ret + infl + lty, data = train_data, 
 summary(logit_h3)
 # making predictions
 predicted_prob_logit_h3 = predict(logit_h3, newdata = test_data, type = "response")
+predicted_prob_logit_h3_df = as.data.frame(predicted_prob_logit_h3) %>%
+  add_column(test_df_date) 
+
+data = left_join(data,predicted_prob_logit_h3_df,by = "date")
 
 #logistic regression for h6
 logit_h6 <- glm(market_state ~  tms + lag6_ret + infl + lty, data = train_data, family = binomial(link = "logit"))
@@ -63,9 +68,19 @@ summary(logit_h6)
 # making predictions
 predicted_prob_logit_h6 =predict(logit_h6, newdata = test_data, type = "response")
 
+predicted_prob_logit_h6_df = as.data.frame(predicted_prob_logit_h6) %>%
+  add_column(test_df_date) 
+
+data = left_join(data,predicted_prob_logit_h6_df,by = "date")
+
 #logistic regression for h12
 logit_h12 <- glm(market_state ~  tms + lag12_ret + infl + lty, data = train_data, family = binomial(link = "logit"))
 # display summary of the model
 summary(logit_h12)
 # making predictions
 predicted_prob_logit_h12 = predict(logit_h12, newdata = test_data, type = "response")
+
+predicted_prob_logit_h12_df = as.data.frame(predicted_prob_logit_h12) %>%
+  add_column(test_df_date) 
+
+data = left_join(data,predicted_prob_logit_h12_df,by = "date")
