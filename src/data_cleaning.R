@@ -4,6 +4,9 @@ rm(list = ls())
 # load required packages
 library(readxl)
 library(dplyr)
+library(mice)
+library(caret)
+library(RANN)
 library(hdm)
 
 # load datasets
@@ -87,6 +90,8 @@ df = left_join(df_stock_price,df_stock_returns, by = "DATE") %>%
   left_join(.,df_10_year_bond_rate, by='DATE') %>%
   left_join(.,df_inflation_rate, by='DATE') %>%
   left_join(.,df_industrial_production_growth_rate, by='DATE')
+
+# impute missing values
 
 # logistic regression
 logit_model <- glm(am ~ mpg + hp + wt, data = mtcars, family = binomial(link = "logit"))
