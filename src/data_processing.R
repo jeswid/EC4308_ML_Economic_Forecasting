@@ -1,33 +1,57 @@
-# remove all objects from memory
-rm(list = ls())
-
-# load required packages
-library(TTR)
-library(dplyr)
-library(zoo)
 library(tidyverse)
+readRDS("complete_data_df.RDS")
 
-# load dataset
-df = readRDS("data/complete_data_df.RDS")
+df = complete_data_df
 
-# transform data
-
-# our prediction horizon is t = 1, 3, 6 months
+#our prediction horizon is t = 1, 3, 6 months
 h1 = 1
 h2 = 3
 h3 = 6
 
-# create lagged variables up to lag 12 for all columns except DATE
-cols_to_lag <- names(df)[names(df) != "DATE"]
+# Create lagged variables for all columns except Date
 df <- df %>%
-  mutate(across(all_of(cols_to_lag), 
-                list(lag1 = ~lag(., 1), lag2 = ~lag(., 2), lag3 = ~lag(., 3), 
-                     lag4 = ~lag(., 4), lag5 = ~lag(., 5), lag6 = ~lag(., 6),
-                     lag7 = ~lag(., 7), lag8 = ~lag(., 8), lag9 = ~lag(., 9), 
-                     lag10 = ~lag(., 10), lag11 = ~lag(., 11), lag12 = ~lag(., 12)),
-                .names = "{fn}_{col}"))
+  mutate(across(-DATE, ~ lag(.x, n = 1), .names = "lag1_{col}")) 
 
-# generate bull and bear variables based on Bry-Bosch algorithm in the Nyberg 2013 paper
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_")), ~ lag(.x, n = 2), .names = "lag2_{col}")) 
+
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_")), ~ lag(.x, n = 3), .names = "lag3_{col}")) 
+
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_")), ~ lag(.x, n = 4), .names = "lag4_{col}")) 
+
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_")), ~ lag(.x, n = 5), .names = "lag5_{col}")) 
+
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_"), ~ lag(.x, n = 6), .names = "lag6_{col}")))
+
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_"), ~ lag(.x, n = 7), .names = "lag7_{col}")))
+
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_"), ~ lag(.x, n = 8), .names = "lag8_{col}")))
+
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_"), ~ lag(.x, n = 9), .names = "lag9_{col}")))
+
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_"), ~ lag(.x, n = 10), .names = "lag10_{col}")))
+
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_"), ~ lag(.x, n = 11), .names = "lag11_{col}")))
+
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_")), ~ lag(.x, n = 12), .names = "lag12_{col}")) 
+
+#now generate bull and bear variables based on Bry-Bosch algorithm in the Nyberg 2013 paper
+
+# Load necessary libraries
+library(TTR)
+library(dplyr)
+library(zoo)
+
 # Assuming df is your dataframe with stock prices under the 'prices' column
 prices <- df$price
 
