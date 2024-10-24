@@ -68,15 +68,3 @@ predicted_prob_logit_h6_df = as.data.frame(predicted_prob_logit_h6) %>%
   add_column(test_df_date) 
 
 data = left_join(data,predicted_prob_logit_h6_df,by = "date")
-
-#logistic regression for h12
-logit_h12 <- glm(market_state ~  tms + lag12_ret + infl + lty, data = train_data, family = binomial(link = "logit"))
-# display summary of the model
-summary(logit_h12)
-# making predictions
-predicted_prob_logit_h12 = predict(logit_h12, newdata = test_data, type = "response")
-
-predicted_prob_logit_h12_df = as.data.frame(predicted_prob_logit_h12) %>%
-  add_column(test_df_date) 
-
-data = left_join(data,predicted_prob_logit_h12_df,by = "date")
