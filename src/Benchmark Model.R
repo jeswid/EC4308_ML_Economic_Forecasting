@@ -4,26 +4,21 @@ set.seed(42)
 # Load the data
 data <- readRDS("final_cleaned_data.RDS")
 
-# Extract the DATE column and ensure it's in date format
-data$date <- as.Date(data$DATE$DATE) 
+# Ensure the DATE column is in date format
+data$date <- as.Date(data$DATE$DATE)
 
 # Sort the data chronologically by date
 data <- data[order(data$date), ]
 
-# Define split percentages
-train_frac <- 0.8  # 80% for training
-valid_frac <- 0.1  # 10% for validation
-test_frac <- 0.1   # 10% for testing
-
-# Calculate row indices for splitting
-n <- nrow(data)
-train_index <- floor(train_frac * n)
-valid_index <- floor((train_frac + valid_frac) * n)
+# Define the number of observations for test, validation, and the rest for training
+n_test <- 150
+n_validation <- 100
+n_train <- nrow(data) - n_test - n_validation
 
 # Split the data in chronological order
-train_data <- data[1:train_index, ]
-validation_data <- data[(train_index + 1):valid_index, ]
-test_data <- data[(valid_index + 1):n, ]
+train_data <- data[1:n_train, ]
+validation_data <- data[(n_train + 1):(n_train + n_validation), ]
+test_data <- data[(n_train + n_validation + 1):nrow(data), ]
 
 # Optional: Extract dates from the test set if needed
 test_data_date <- test_data %>%
