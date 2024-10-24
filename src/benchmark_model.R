@@ -7,11 +7,8 @@ set.seed(42)
 # load dataset
 data <- readRDS("data/final_cleaned_data.RDS")
 
-# ensure the DATE column is in date format
-data$date <- as.Date(data$DATE$DATE)
-
 # sort the data chronologically by date
-data <- data[order(data$date), ]
+data <- data[order(data$DATE), ]
 
 # define the number of observations for test, validation, and the rest for training
 n_test <- 150
