@@ -10,6 +10,7 @@ library(RANN)
 library(hdm)
 library(ggplot2)
 library("writexl")
+library(zoo)
 
 # load datasets
 df_stock_price = read_excel("data/ie_data.xls",sheet = 'Data',skip = 7)
