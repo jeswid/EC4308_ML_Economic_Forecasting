@@ -11,19 +11,40 @@ h4 = 12
 
 # Create lagged variables for all columns except Date
 df <- df %>%
-  mutate(across(-DATE, ~ lag(.x, n = h1), .names = "lag1_{col}")) 
+  mutate(across(-DATE, ~ lag(.x, n = 1), .names = "lag1_{col}")) 
 
-# Create lag3 variables excluding lag1 variables
 df <- df %>%
-  mutate(across(-c(DATE, starts_with("lag1_")), ~ lag(.x, n = h2), .names = "lag3_{col}")) 
+  mutate(across(-c(DATE, starts_with("lag_")), ~ lag(.x, n = 2), .names = "lag2_{col}")) 
 
-# Create lag6 variables excluding lag1 and lag3 variables
 df <- df %>%
-  mutate(across(-c(DATE, starts_with("lag1_"), starts_with("lag3_")), ~ lag(.x, n = h3), .names = "lag6_{col}"))
+  mutate(across(-c(DATE, starts_with("lag_")), ~ lag(.x, n = 3), .names = "lag3_{col}")) 
 
-# Create lag12 variables excluding lag1 and lag3 variables
 df <- df %>%
-  mutate(across(-c(DATE, starts_with("lag")), ~ lag(.x, n = h4), .names = "lag12_{col}")) 
+  mutate(across(-c(DATE, starts_with("lag_")), ~ lag(.x, n = 4), .names = "lag4_{col}")) 
+
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_")), ~ lag(.x, n = 5), .names = "lag5_{col}")) 
+
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_"), ~ lag(.x, n = 6), .names = "lag6_{col}")))
+
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_"), ~ lag(.x, n = 7), .names = "lag7_{col}")))
+
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_"), ~ lag(.x, n = 8), .names = "lag8_{col}")))
+
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_"), ~ lag(.x, n = 9), .names = "lag9_{col}")))
+
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_"), ~ lag(.x, n = 10), .names = "lag10_{col}")))
+
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_"), ~ lag(.x, n = 11), .names = "lag11_{col}")))
+
+df <- df %>%
+  mutate(across(-c(DATE, starts_with("lag_")), ~ lag(.x, n = 12), .names = "lag12_{col}")) 
 
 #now generate bull and bear variables based on Bry-Bosch algorithm in the Nyberg 2013 paper
 
