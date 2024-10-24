@@ -97,4 +97,4 @@ df = left_join(df_stock_returns_monthly, df_stock_price, by = "DATE") %>%
   left_join(.,df_industrial_production_growth_rate, by='DATE')
 
 # save df as an RDS file
-saveRDS(df, file = "complete_data_df.RDS")
+saveRDS(df, file = "data/complete_data_df.RDS")
