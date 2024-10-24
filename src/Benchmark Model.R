@@ -1,39 +1,40 @@
 # Set seed for reproducibility
 set.seed(42)
 
-data = readRDS("final_cleaned_data.RDS")
+# Load the data
+data <- readRDS("final_cleaned_data.RDS")
 
-data$date = data$DATE$DATE
+# Extract the DATE column and ensure it's in date format
+data$date <- as.Date(data$DATE$DATE) 
 
+# Sort the data chronologically by date
+data <- data[order(data$date), ]
 
-# Stratified Sampling by 'market_state'
-strata_cols <- c("market_state")
+# Define split percentages
+train_frac <- 0.8  # 80% for training
+valid_frac <- 0.1  # 10% for validation
+test_frac <- 0.1   # 10% for testing
 
-# Perform the stratified sampling for training set (80%)
-train_data <- data %>%
-  group_by(across(all_of(strata_cols))) %>%
-  sample_frac(0.8) %>% # Adjust the fraction as needed for training set
-  ungroup()
+# Calculate row indices for splitting
+n <- nrow(data)
+train_index <- floor(train_frac * n)
+valid_index <- floor((train_frac + valid_frac) * n)
 
-# Remaining data after training set
-remaining_data <- anti_join(data, train_data)
+# Split the data in chronological order
+train_data <- data[1:train_index, ]
+validation_data <- data[(train_index + 1):valid_index, ]
+test_data <- data[(valid_index + 1):n, ]
 
-# Validation set (10%)
-validation_data <- remaining_data %>%
-  group_by(across(all_of(strata_cols))) %>%
-  sample_frac(0.5) %>% # This will give you 10% of the original data (half of the remaining 20%)
-  ungroup()
-
-# Test set (10%)
-test_data <- anti_join(remaining_data, validation_data)
-test_data_date = test_data %>%
+# Optional: Extract dates from the test set if needed
+test_data_date <- test_data %>%
   select(date)
-test_df_date = as.data.frame(test_data_date)
 
-# Check the sizes of the datasets
-cat("Training set size:", nrow(train_data), "\n")
-cat("Validation set size:", nrow(validation_data), "\n")
-cat("Test set size:", nrow(test_data), "\n")
+test_df_date <- as.data.frame(test_data_date)
+
+# Output the dimensions of each split for confirmation
+cat("Train Data:", nrow(train_data), "\n")
+cat("Validation Data:", nrow(validation_data), "\n")
+cat("Test Data:", nrow(test_data), "\n")
 
 
 ###ML Models
