@@ -1,10 +1,10 @@
 # set seed for reproducibility
 set.seed(42)
 
-# Load the data
-data <- readRDS("final_cleaned_data.RDS")
+# load dataset
+data <- readRDS("data/final_cleaned_data.RDS")
 
-# Ensure the DATE column is in date format
+# ensure the DATE column is in date format
 data$date <- as.Date(data$DATE$DATE)
 
 # Sort the data chronologically by date

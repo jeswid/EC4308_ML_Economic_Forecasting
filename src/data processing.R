@@ -82,4 +82,4 @@ bull_bear <- c(rep(NA, length(prices) - length(bull_bear)), bull_bear)
 # 8. Add the computed market state to the original dataframe
 df$market_state <- bull_bear
 
-saveRDS(df, "final_cleaned_data.RDS")
+saveRDS(df, "data/final_cleaned_data.RDS")
