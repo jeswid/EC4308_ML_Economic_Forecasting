@@ -1,3 +1,6 @@
+# remove all objects from memory
+rm(list = ls())
+
 # set seed for reproducibility
 set.seed(42)
 
@@ -7,15 +10,15 @@ data <- readRDS("data/final_cleaned_data.RDS")
 # ensure the DATE column is in date format
 data$date <- as.Date(data$DATE$DATE)
 
-# Sort the data chronologically by date
+# sort the data chronologically by date
 data <- data[order(data$date), ]
 
-# Define the number of observations for test, validation, and the rest for training
+# define the number of observations for test, validation, and the rest for training
 n_test <- 150
 n_validation <- 100
 n_train <- nrow(data) - n_test - n_validation
 
-# Split the data in chronological order
+# split the data in chronological order
 train_data <- data[1:n_train, ]
 validation_data <- data[(n_train + 1):(n_train + n_validation), ]
 test_data <- data[(n_train + n_validation + 1):nrow(data), ]
