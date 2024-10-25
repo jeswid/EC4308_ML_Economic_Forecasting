@@ -2,7 +2,7 @@
 set.seed(42)
 
 # Load dataset
-data <- readRDS("data/final_cleaned_data.RDS")
+data <- readRDS("data/final_cleaned_data_with_bull_bear.RDS")
 data$date <- as.Date(data$DATE)
 
 # Sort the data by date
