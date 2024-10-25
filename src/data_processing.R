@@ -10,8 +10,6 @@ library(tidyverse)
 # load dataset
 df = readRDS("data/complete_data_df.RDS")
 
-# transform variables
-
 # our prediction horizon is t = 1, 3, 6 months
 h1 = 1
 h2 = 3

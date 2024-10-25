@@ -38,6 +38,9 @@ df$book_market <- c(NA, diff(log(df$book_market)))
 # b/m x-sect factor
 adf.test(df$fbm, alternative = "stationary") # stationary
 
+#data transformation for index variables
+index_vars <- c(price, ret, retx, pce, cay, svar, impvar, vrp, tchi, rsvix)
+
 # update data
 saveRDS(df, file = "data/complete_data_df.RDS")
 
