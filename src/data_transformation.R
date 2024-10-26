@@ -52,8 +52,7 @@ diff_log_series <- diff(log(df$excess_CAPE_yield))
 df$excess_CAPE_yield <- c(NA, diff(log(df$excess_CAPE_yield)))
 
 #data transformation for index variables that only requires first differencing
-index_vars_firstdiff <- c("ret", "retx", "pce", "cay", "svar", "impvar", "vrp", "tchi", "rsvix", 
-                "AAA", "BAA", "dividend_yield")
+index_vars_firstdiff <- c("ret", "retx", "svar", "tchi", "AAA", "BAA", "dividend_yield")
 
 for (x in index_vars_firstdiff) {
   # Check if the column has already been differenced by ensuring only one leading NA
