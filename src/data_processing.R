@@ -45,5 +45,8 @@ bb.dating.states(prices, bull_states, dates)
 # add the bull-bear market states to the dataframe
 df$market_state <- ifelse(bull_states, "Bull", "Bear")
 
+# convert "Bull" to 1 and "Bear" to 0
+df$market_state <- ifelse(df$market_state == "Bull", 1, 0)
+
 # save the final cleaned data with bull-bear market states
 saveRDS(df, "data/final_cleaned_data_with_bull_bear.RDS")
