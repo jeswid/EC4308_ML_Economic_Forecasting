@@ -1,10 +1,13 @@
-# data transformation for ratio variables
+# remove all objects from memory
+rm(list = ls())
 
-df = readRDS("data/complete_data_df.RDS")
-
-# install.packages('tseries')
+# load required packages
 library(tseries)  # for ADF test
 
+# load dataset
+df = readRDS("data/complete_data_df.RDS")
+
+# data transformation for ratio variables
 # dividend price ratio
 adf.test(df$dividend_price_ratio, alternative = "stationary") # non-stationary
 # log then first difference
@@ -12,28 +15,23 @@ diff_log_series <- diff(log(df$dividend_price_ratio))
 adf.test(diff_log_series) # stationary
 df$dividend_price_ratio <- c(NA, diff(log(df$dividend_price_ratio)))
 
-
 # SP price
 adf.test(df$price, alternative = "stationary") # non-stationary
 diff_log_series <- diff(log(df$price))
 adf.test(diff_log_series) # stationary
 df$price <- c(NA, diff(log(df$price)))
 
-
 # earnings price ratio
 adf.test(df$earnings_price_ratio, alternative = "stationary") # stationary
 
-
 # dividend payout
 adf.test(df$dividend_payout, alternative = "stationary") # stationary
-
 
 # book market b/m
 adf.test(df$book_market, alternative = "stationary") # not stationary
 diff_log_series <- diff(log(df$book_market))
 adf.test(diff_log_series) # stationary
 df$book_market <- c(NA, diff(log(df$book_market)))
-
 
 # b/m x-sect factor
 adf.test(df$fbm, alternative = "stationary") # stationary
@@ -65,6 +63,6 @@ for (x in index_vars_firstdiff) {
 }
 
 # update data
-saveRDS(df, file = "data/complete_data_df.RDS")
+saveRDS(df, file = "data/complete_data_df_transformed.RDS")
 
 

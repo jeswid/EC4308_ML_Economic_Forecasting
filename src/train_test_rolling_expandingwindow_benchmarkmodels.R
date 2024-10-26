@@ -19,7 +19,7 @@ predicted_probs_logit_h3 <- list()
 predicted_probs_logit_h6 <- list()
 
 # Rolling Window Loop
-for (start in seq(1, (nrow(data) - n_test - n_validation - train_window_size), by = 10)) {
+for (start in seq(1, nrow(data), by = 10)) {
   
   # Define rolling window train and test data
   train_data <- data[start:(start + train_window_size - 1), ]

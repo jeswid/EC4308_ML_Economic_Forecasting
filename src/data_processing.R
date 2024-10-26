@@ -1,22 +1,22 @@
-# Remove all objects from memory
+# remove all objects from memory
 rm(list = ls())
 
-# Load required packages
+# load required packages
 library(TTR)
 library(dplyr)
 library(zoo)
 library(tidyverse)
 library(bbdetection)
 
-# Load dataset
-df <- readRDS("data/complete_data_df.RDS")
+# load dataset
+df <- readRDS("data/complete_data_df_transformed.RDS")
 
-# Our prediction horizon is t = 1, 3, 6 months
+# our prediction horizon is t = 1, 3, 6 months
 h1 <- 1
 h2 <- 3
 h3 <- 6
 
-# Create lagged variables up to lag 12 for all columns except DATE
+# create lagged variables up to lag 12 for all columns except DATE
 cols_to_lag <- names(df)[names(df) != "DATE"]
 df <- df %>%
   mutate(across(all_of(cols_to_lag), 
@@ -26,24 +26,24 @@ df <- df %>%
                      lag10 = ~lag(., 10), lag11 = ~lag(., 11), lag12 = ~lag(., 12)),
                 .names = "{fn}_{col}"))
 
-# Assuming 'price' column contains the price data
+# assuming 'price' column contains the price data
 prices <- df$price
 
-# Convert dates if necessary
+# convert dates if necessary
 dates <- as.Date(df$DATE)
 
-# Set parameters for the dating algorithm
-# These are typical parameters, but you may need to adjust based on your data
+# set parameters for the dating algorithm
+# these are typical parameters, but you may need to adjust based on your data
 setpar_dating_alg(t_window = 4, t_censor = 6, t_phase = 4, t_cycle = 16, max_chng = 20)
 
-# Run the dating algorithm to identify bull and bear market states
+# run the dating algorithm to identify bull and bear market states
 bull_states <- run_dating_alg(prices)
 
-# Print out the dating of bull-bear states
+# print out the dating of bull-bear states
 bb.dating.states(prices, bull_states, dates)
 
-# Add the bull-bear market states to the dataframe
+# add the bull-bear market states to the dataframe
 df$market_state <- ifelse(bull_states, "Bull", "Bear")
 
-# Save the final cleaned data with bull-bear market states
+# save the final cleaned data with bull-bear market states
 saveRDS(df, "data/final_cleaned_data_with_bull_bear.RDS")
