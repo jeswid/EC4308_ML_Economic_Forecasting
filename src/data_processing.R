@@ -26,14 +26,6 @@ df <- df %>%
                 list(lag1 = ~lag(., 1), lag2 = ~lag(., 2), lag3 = ~lag(., 3), 
                      lag4 = ~lag(., 4), lag5 = ~lag(., 5), lag6 = ~lag(., 6)),
                 .names = "{fn}_{col}"))
-df <- df %>%
-  mutate(across(c("price"), list(lag7 = ~lag(., 7), 
-                                 lag8 = ~lag(., 8), 
-                                 lag9 = ~lag(., 9), 
-                                 lag10 = ~lag(., 10), 
-                                 lag11 = ~lag(., 11), 
-                                 lag12 = ~lag(., 12)),
-                .names = "lag{.fn}_{.col}"))
 
 # assuming 'price' column contains the price data
 prices <- df$price
@@ -56,6 +48,17 @@ df$market_state <- ifelse(bull_states, "Bull", "Bear")
 
 # convert "Bull" to 1 and "Bear" to 0
 df$market_state <- ifelse(df$market_state == "Bull", 1, 0)
+
+df <- df %>%
+  mutate(across(c("market_state"), list(lag1 = ~lag(., 1), lag2 = ~lag(., 2), lag3 = ~lag(., 3), 
+                                        lag4 = ~lag(., 4), lag5 = ~lag(., 5), lag6 = ~lag(., 6),
+                                        lag7 = ~lag(., 7), 
+                                 lag8 = ~lag(., 8), 
+                                 lag9 = ~lag(., 9), 
+                                 lag10 = ~lag(., 10), 
+                                 lag11 = ~lag(., 11), 
+                                 lag12 = ~lag(., 12)),
+                .names = "lag{.fn}_{.col}"))
 
 # save the final cleaned data with bull-bear market states
 saveRDS(df, "data/final_cleaned_data_with_bull_bear.RDS")
