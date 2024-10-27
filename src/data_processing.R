@@ -16,15 +16,24 @@ h1 <- 1
 h2 <- 3
 h3 <- 6
 
+df <- df %>%
+  arrange(DATE)
+
 # create lagged variables up to lag 12 for all columns except DATE
 cols_to_lag <- names(df)[names(df) != "DATE"]
 df <- df %>%
   mutate(across(all_of(cols_to_lag), 
                 list(lag1 = ~lag(., 1), lag2 = ~lag(., 2), lag3 = ~lag(., 3), 
-                     lag4 = ~lag(., 4), lag5 = ~lag(., 5), lag6 = ~lag(., 6),
-                     lag7 = ~lag(., 7), lag8 = ~lag(., 8), lag9 = ~lag(., 9), 
-                     lag10 = ~lag(., 10), lag11 = ~lag(., 11), lag12 = ~lag(., 12)),
+                     lag4 = ~lag(., 4), lag5 = ~lag(., 5), lag6 = ~lag(., 6)),
                 .names = "{fn}_{col}"))
+df <- df %>%
+  mutate(across(c("price"), list(lag7 = ~lag(., 7), 
+                                 lag8 = ~lag(., 8), 
+                                 lag9 = ~lag(., 9), 
+                                 lag10 = ~lag(., 10), 
+                                 lag11 = ~lag(., 11), 
+                                 lag12 = ~lag(., 12)),
+                .names = "lag{.fn}_{.col}"))
 
 # assuming 'price' column contains the price data
 prices <- df$price
@@ -34,7 +43,7 @@ dates <- as.Date(df$DATE)
 
 # set parameters for the dating algorithm
 # these are typical parameters, but you may need to adjust based on your data
-setpar_dating_alg(t_window = 4, t_censor = 6, t_phase = 4, t_cycle = 16, max_chng = 20)
+setpar_dating_alg(t_window = 6, t_censor = 6, t_phase = 4, t_cycle = 15, max_chng = 20)
 
 # run the dating algorithm to identify bull and bear market states
 bull_states <- run_dating_alg(prices)
