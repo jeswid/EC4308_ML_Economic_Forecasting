@@ -25,7 +25,8 @@ df <- df %>%
   mutate(across(all_of(cols_to_lag), 
                 list(lag1 = ~lag(., 1), lag2 = ~lag(., 2), lag3 = ~lag(., 3), 
                      lag4 = ~lag(., 4), lag5 = ~lag(., 5), lag6 = ~lag(., 6),
-                      lag7 = ~lag(., 7)),
+                      lag7 = ~lag(., 7), lag8 = ~lag(., 8), lag9 = ~lag(., 9),
+                     lag10 = ~lag(., 10), lag11 = ~lag(., 11)),
                 .names = "{fn}_{col}"))
 
 # assuming 'price' column contains the price data
