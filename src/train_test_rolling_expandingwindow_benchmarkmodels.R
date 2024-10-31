@@ -28,8 +28,8 @@ for (start in seq(1, nrow(data), by = 10)) {
   
   # Logistic regression models for h1, h3, and h6
   logit_h1 <- glm(market_state ~ tms + lag1_ret + infl + lty, data = train_data, family = binomial(link = "logit"))
-  logit_h3 <- glm(market_state ~ tms + lag4_ret + infl + lty, data = train_data, family = binomial(link = "logit"))
-  logit_h6 <- glm(market_state ~ tms + lag7_ret + infl + lty, data = train_data, family = binomial(link = "logit"))
+  logit_h3 <- glm(market_state ~ lag2_tms + lag4_ret + lag2_infl + lag2_lty, data = train_data, family = binomial(link = "logit"))
+  logit_h6 <- glm(market_state ~ lag5_tms + lag7_ret + lag5_infl + lag5_lty, data = train_data, family = binomial(link = "logit"))
   
   # Make predictions for each horizon and store
   pred_h1 <- predict(logit_h1, newdata = test_data, type = "response")
