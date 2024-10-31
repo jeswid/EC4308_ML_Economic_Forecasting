@@ -59,7 +59,7 @@ df <- df %>%
                                  lag10 = ~lag(., 10), 
                                  lag11 = ~lag(., 11), 
                                  lag12 = ~lag(., 12)),
-                .names = "lag{.fn}_{.col}"))
+                .names = "{.fn}_{.col}"))
 
 # save the final cleaned data with bull-bear market states
 saveRDS(df, "data/final_cleaned_data_with_bull_bear.RDS")
