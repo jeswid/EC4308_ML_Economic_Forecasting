@@ -205,3 +205,174 @@ test_result$`6-step ahead forecast` = test_boost_h6
 
 # save result
 saveRDS(test_result, file = "data/boosting_gbm_prediction.RDS")
+
+
+
+runboost_xgb = function(X, y) {
+  X_temp = as.matrix(X)
+  X.out=as.matrix(tail(X_temp,1))
+  dtrain <- xgb.DMatrix(data = X_temp, label = y) # convert data to DMatrix format
+  temp.boost = xgb.train(data = dtrain, objective = "binary:logistic",
+                         max.depth = 5,nround = M,eta = .01, verbosity = 0) #fit model for d=5
+  pred_matrix <- matrix(0, nrow = 1, ncol = M) # initialize a matrix to store predictions across all trees
+  for (tree in 1:M) { # loop over each tree and generate prediction
+    pred_matrix[1, tree] <- predict(temp.boost, X.out, ntreelimit = tree)
+  }
+  return(list("model"=temp.boost,"pred"=pred_matrix))
+}
+
+runboost2_xgb = function(X, y) {
+  X_temp = as.matrix(X)
+  X.out=as.matrix(tail(X_temp,1))
+  dtrain <- xgb.DMatrix(data = X_temp, label = y) # convert data to DMatrix format
+  temp.boost = xgb.train(data = dtrain, objective = "binary:logistic",
+                         max.depth = 2,nround = M,eta = .01, verbosity = 0) #fit model for d=2
+  pred_matrix <- matrix(0, nrow = 1, ncol = M) # initialize a matrix to store predictions across all trees
+  for (tree in 1:M) { # loop over each tree and generate prediction
+    pred_matrix[1, tree] <- predict(temp.boost, X.out, ntreelimit = tree)
+  }
+  return(list("model"=temp.boost,"pred"=pred_matrix))
+}
+
+# cross validation
+# h=1, X from lag 1-6, Y starts with lag7
+X_CV_h1 = head(X_h1, ntrain+ncrossv)   # remove test set
+y_cv = head(Y, ntrain+ncrossv)
+M = 10000 # Max number of trees considered
+cv_boost_xgb = matrix(0,ncrossv,M) #blank for CV criteria, d=5
+cv_boost2_xgb = matrix(0,ncrossv,M) #blank for CV criteria, d=2
+for(i in ncrossv:1){#NB: backwards FOR loop: going from 100 down to 1
+  X.window = X_CV_h1[(1+ncrossv-i):(nrow(X_CV_h1)-i),] #define the estimation window (first one: 1 to 332, then 2 to 333 etc, till 100 to 431.)
+  y.window = y_cv[(1+ncrossv-i):(length(y_cv)-i)]
+  # boost = runboost_xgb(X.window, y.window)
+  boost2 = runboost2_xgb(X.window, y.window)
+  # cv_boost_xgb[(1+ncrossv-i), ] = matrix(boost$pred > 0.5) # save the forecast
+  cv_boost2_xgb[(1+ncrossv-i), ] = matrix(boost2$pred > 0.5) # save the forecast
+  cat("iteration", (1+ncrossv-i), "\n") # display iteration number
+}
+
+real = tail(y_cv, ncrossv)
+missclass_xgb = colSums(abs(real-cv_boost_xgb)) # compute misclassification rate
+bestM_xgb = which.min(missclass_xgb) # bestM = 93
+cv_min_xgb = min(missclass_xgb/ncrossv) # cv_min=0.14
+
+missclass2_xgb = colSums(abs(real-cv_boost2_xgb)) # compute misclassification rate
+bestM2_xgb = which.min(missclass2_xgb) # bestM = 1019
+cv_min2_xgb = min(missclass2_xgb/ncrossv) # cv_min = 0.14
+
+
+# h=3, X from lag 3-8, Y starts with lag7
+X_CV_h3 = head(X_h3, ntrain+ncrossv)   # remove test set
+y_cv = head(Y, ntrain+ncrossv)
+M = 10000 # Max number of trees considered
+cv_boost_xgb_h3 = matrix(0,ncrossv,M) #blank for CV criteria, d=5
+cv_boost2_xgb_h3 = matrix(0,ncrossv,M) #blank for CV criteria, d=2
+for(i in ncrossv:1){#NB: backwards FOR loop: going from 100 down to 1
+  X.window = X_CV_h3[(1+ncrossv-i):(nrow(X_CV_h3)-i),] #define the estimation window (first one: 1 to 332, then 2 to 333 etc, till 100 to 431.)
+  y.window = y_cv[(1+ncrossv-i):(length(y_cv)-i)]
+  # boost = runboost_xgb(X.window, y.window)
+  boost2 = runboost2_xgb(X.window, y.window)
+  # cv_boost_xgb_h3[(1+ncrossv-i), ] = matrix(boost$pred > 0.5) # save the forecast
+  cv_boost2_xgb_h3[(1+ncrossv-i), ] = matrix(boost2$pred > 0.5) # save the forecast
+  cat("iteration", (1+ncrossv-i), "\n") # display iteration number
+}
+
+real = tail(y_cv, ncrossv)
+missclass_xgb_h3 = colSums(abs(real-cv_boost_xgb_h3)) # compute misclassification rate
+bestM_xgb_h3 = which.min(missclass_xgb_h3) # bestM = 128
+cv_min_xgb_h3 = min(missclass_xgb_h3/ncrossv) # cv_min=0.13
+
+missclass2_xgb_h3 = colSums(abs(real-cv_boost2_xgb_h3)) # compute misclassification rate
+bestM2_xgb_h3 = which.min(missclass2_xgb_h3) # bestM = 1111
+cv_min2_xgb_h3 = min(missclass2_xgb_h3/ncrossv) # cv_min = 0.14
+
+
+
+# h=6, X from lag 6-11, Y starts with lag7
+X_CV_h6 = head(X_h6, ntrain+ncrossv)   # remove test set
+y_cv = head(Y, ntrain+ncrossv)
+M = 10000 # Max number of trees considered
+cv_boost_xgb_h6 = matrix(0,ncrossv,M) #blank for CV criteria, d=5
+cv_boost2_xgb_h6 = matrix(0,ncrossv,M) #blank for CV criteria, d=2
+for(i in ncrossv:1){#NB: backwards FOR loop: going from 100 down to 1
+  X.window = X_CV_h6[(1+ncrossv-i):(nrow(X_CV_h6)-i),] #define the estimation window (first one: 1 to 332, then 2 to 333 etc, till 100 to 431.)
+  y.window = y_cv[(1+ncrossv-i):(length(y_cv)-i)]
+  # boost = runboost_xgb(X.window, y.window)
+  boost2 = runboost2_xgb(X.window, y.window)
+  # cv_boost_xgb_h6[(1+ncrossv-i), ] = matrix(boost$pred > 0.5) # save the forecast
+  cv_boost2_xgb_h6[(1+ncrossv-i), ] = matrix(boost2$pred > 0.5) # save the forecast
+  cat("iteration", (1+ncrossv-i), "\n") # display iteration number
+}
+
+real = tail(y_cv, ncrossv)
+missclass_xgb_h6 = colSums(abs(real-cv_boost_xgb_h6)) # compute misclassification rate
+bestM_xgb_h6 = which.min(missclass_xgb_h6) # bestM = 178
+cv_min_xgb_h6 = min(missclass_xgb_h6/ncrossv) # cv_min=0.13
+
+missclass2_xgb_h6 = colSums(abs(real-cv_boost2_xgb_h6)) # compute misclassification rate
+bestM2_xgb_h6 = which.min(missclass2_xgb_h6) # bestM = 955
+cv_min2_xgb_h6 = min(missclass2_xgb_h6/ncrossv) # cv_min = 0.13
+
+
+
+# test
+test_result_xgb <- data.frame(matrix(NA, nrow = 150, ncol = 3))
+colnames(test_result_xgb) <- c("1-step ahead forecast", "3-step ahead forecast", "6-step ahead forecast")
+
+runboost_setn_xgb = function(X, y, n) { # n is the tree size
+  X_temp = as.matrix(X)
+  X.out=as.matrix(tail(X_temp,1))
+  dtrain <- xgb.DMatrix(data = X_temp, label = y) # convert data to DMatrix format
+  temp.boost = xgb.train(data = dtrain, objective = "binary:logistic",
+                         max.depth = 5,nround = n,eta = .01, verbosity = 0) #fit model for d=5
+  temp.fit = predict(temp.boost, X.out, ntreelimit = n)  #prediction for d=5
+  return(list("model"=temp.boost,"pred"=temp.fit))
+}
+
+# h=1: best model -- depth=5, tree size=93
+test_X_h1 = X_h1
+y_test = Y
+test_boost_xgb = matrix(0,ntest,1) #blank for CV criteria, d=5
+for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
+  X.window = test_X_h1[(1+ntest-i):(nrow(test_X_h1)-i),] #define the estimation window (first one: 1 to 432, then 2 to 433 etc, till 150 to 581.)
+  y.window = y_test[(1+ntest-i):(length(y_test)-i)]
+  boost = runboost_setn_xgb(X.window, y.window, n=93)
+  test_boost_xgb[(1+ntest-i), 1] = boost$pred > 0.5 # save the forecast
+  cat("iteration", (1+ntest-i), "\n") # display iteration number
+}
+test_result_xgb$`1-step ahead forecast` = test_boost_xgb
+
+# h=3: best model -- depth=5, tree size = 128
+test_X_h3 = X_h3
+y_test = Y
+test_boost_h3_xgb = matrix(0,ntest,1) #blank for CV criteria, d=5
+for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
+  X.window = test_X_h3[(1+ntest-i):(nrow(test_X_h3)-i),] #define the estimation window (first one: 1 to 432, then 2 to 433 etc, till 150 to 581.)
+  y.window = y_test[(1+ntest-i):(length(y_test)-i)]
+  boost = runboost_setn_xgb(X.window, y.window, n=128)
+  test_boost_h3_xgb[(1+ntest-i), 1] = boost$pred > 0.5 # save the forecast
+  cat("iteration", (1+ntest-i), "\n") # display iteration number
+}
+test_result_xgb$`3-step ahead forecast` = test_boost_h3_xgb
+
+# h=3: best model -- depth=5, tree size = 178
+test_X_h3 = X_h3
+y_test = Y
+test_boost_h6_xgb = matrix(0,ntest,1) #blank for CV criteria, d=5
+for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
+  X.window = test_X_h3[(1+ntest-i):(nrow(test_X_h3)-i),] #define the estimation window (first one: 1 to 432, then 2 to 433 etc, till 150 to 581.)
+  y.window = y_test[(1+ntest-i):(length(y_test)-i)]
+  boost = runboost_setn_xgb(X.window, y.window, n=178)
+  test_boost_h6_xgb[(1+ntest-i), 1] = boost$pred > 0.5 # save the forecast
+  cat("iteration", (1+ntest-i), "\n") # display iteration number
+}
+test_result_xgb$`6-step ahead forecast` = test_boost_h6_xgb
+
+saveRDS(test_result_xgb, file = "data/boosting_xgb_prediction.RDS")
+
+
+# all(test_result[[1]] == test_result_xgb[[1]])
+
+
+
+
