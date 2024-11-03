@@ -13,6 +13,10 @@ df <- readRDS("data/complete_data_df_transformed.RDS")
 
 colSums(is.na(df)) # check NAs
 
+df = df %>% select(-starts_with("real")) %>% # remove real prices
+  select(-c(CAPE, excess_CAPE_yield)) %>%
+  select(-c(ten_year_annualized_stock_real_return, ten_year_annualized_bonds_real_return))
+
 # our prediction horizon is t = 1, 3, 6 months
 h1 <- 1
 h2 <- 3
@@ -61,10 +65,6 @@ df <- df %>%
                                         lag13 = ~dplyr::lag(., 13), lag14 = ~dplyr::lag(., 14), lag15 = ~dplyr::lag(., 15),
                                         lag16 = ~dplyr::lag(., 16), lag17 = ~dplyr::lag(., 17)),
                 .names = "{.fn}_{.col}"))
-
-df = df %>% select(-starts_with("real")) %>% # remove real prices
-  select(-c(CAPE, excess_CAPE_yield)) %>%
-  select(-c(ten_year_annualized_stock_real_return, ten_year_annualized_bonds_real_return))
 
 # save the final cleaned data with bull-bear market states
 saveRDS(df, "data/final_cleaned_data_with_bull_bear.RDS")
