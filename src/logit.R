@@ -21,6 +21,7 @@ predicted_probs_logit_h6 <- list()
 # Rolling Window Loop
 for (start in seq(1, nrow(data), by = 10)) {
   
+  ## To remove validation set
   # Define rolling window train and test data
   train_data <- data[start:(start + train_window_size - 1), ]
   validation_data <- data[(start + train_window_size):(start + train_window_size + n_validation - 1), ]
@@ -49,8 +50,11 @@ predicted_probs_logit_h6_df <- do.call(rbind, predicted_probs_logit_h6)
 # Join predictions back to the original dataset if desired
 data <- data %>%
   left_join(predicted_probs_logit_h1_df, by = "date") %>%
+  rename(predicted_prob_logit_h1 = prob) %>%
   left_join(predicted_probs_logit_h3_df, by = "date") %>%
-  left_join(predicted_probs_logit_h6_df, by = "date")
+  rename(predicted_prob_logit_h3 = prob) %>%
+  left_join(predicted_probs_logit_h6_df, by = "date") %>%
+  rename(predicted_prob_logit_h6 = prob)
 
 # Output dimensions of each prediction set for verification
 cat("H1 Predictions:", nrow(predicted_probs_logit_h1_df), "\n")

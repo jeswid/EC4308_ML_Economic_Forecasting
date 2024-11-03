@@ -1,13 +1,13 @@
 #strategy evaluation code
 # Assuming 'data' contains 'predicted_prob_logit_h1' (forecasted probability of bear market)
-# and 'market_state' (actual market state: 1 = Bear, 0 = Bull)
+# and 'market_state' (actual market state: 0 = Bear, 1 = Bull)
 
 results_logit_h1 <- data %>%
   filter(!is.na(predicted_prob_logit_h1))
 
 # Define portfolio strategy based on forecast probabilities
 data$strategy_return <- ifelse(
-  data$predicted_prob_logit_h1 < 0.5,  # Threshold of 0.5 for investment in stocks
+  data$predicted_prob_logit_h1 > 0.5,  # Threshold of 0.5 for investment in stocks
   data$ret,          # Invest in stocks: Use the stock return
   data$tbl         # Invest in risk-free asset: Use T-bill rate
 )
@@ -71,4 +71,3 @@ ggplot(data, aes(x = date)) +
 
 # 5. Print summary of cumulative strategy returns
 summary(data$cum_strategy_return_2sided_avg)
-
