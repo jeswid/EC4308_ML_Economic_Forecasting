@@ -19,7 +19,7 @@ data$cum_strategy_return <- cumprod(1 + data$strategy_return) - 1
 sample_avg_threshold <- mean(data$market_state)  # Calculate sample average of bear markets
 
 data$strategy_return_avg <- ifelse(
-  data$predicted_prob_logit_h1 < sample_avg_threshold,
+  data$predicted_prob_logit_h1 > sample_avg_threshold,
   data$ret,
   data$tbl
 )
@@ -53,7 +53,7 @@ data$ma_threshold <- rollapply(
 data <- data %>%
   filter(!is.na(ma_threshold))
 data$strategy_return_2sided_avg <- ifelse(
-  data$predicted_prob_logit_h1 < data$ma_threshold, 
+  data$predicted_prob_logit_h1 > data$ma_threshold, 
   data$ret,  # Buy stocks
   data$tbl  # Switch to risk-free asset
 )
