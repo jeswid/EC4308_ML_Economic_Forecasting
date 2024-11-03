@@ -21,7 +21,6 @@ predicted_probs_logit_h6 <- list()
 # Rolling Window Loop
 for (start in seq(1, nrow(data), by = 10)) {
   
-  ## To remove validation set
   # Define rolling window train and test data
   train_data <- data[start:(start + train_window_size + n_validation - 1), ]
   test_data <- data[(start + train_window_size + n_validation):(start + train_window_size + n_validation + n_test - 1), ]
