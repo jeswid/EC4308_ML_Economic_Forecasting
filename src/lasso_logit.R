@@ -83,7 +83,7 @@ predicted <- predicted %>%
 # Save predicted values as RDS file
 saveRDS(predicted, file = "lasso_logit_predictions.rds")
 
-#Function generates a dataframe of predictors that are selected in each iteration
+# Function generates a dataframe of predictors (and a boolean) that are selected in each iteration
 get_selected_features <- function(i, data, testsize){
   
   train_set <- data[i:(nrow(data) - test_size + (i-1)), ]
@@ -128,8 +128,8 @@ feat_df_h6 <- feat_df_h6[feat_df_h6$true_count > mean(feat_df_h6$true_count),]
 
 # Plot feature importance
 h1plot <- feat_df_h1 %>%
-  arrange(true_count) %>%    # First sort by val. This sort the dataframe but NOT the factor levels
-  mutate(predictor=factor(predictor, levels=predictor)) %>%   # This trick update the factor levels
+  arrange(true_count) %>%    
+  mutate(predictor=factor(predictor, levels=predictor)) %>%  
   ggplot( aes(x=predictor, y=true_count)) +
   geom_segment( aes(xend=predictor, yend=0)) +
   geom_point( size=4, color="orange") +
@@ -138,8 +138,8 @@ h1plot <- feat_df_h1 %>%
   xlab("")
 
 h3plot <- feat_df_h3 %>%
-  arrange(true_count) %>%    # First sort by val. This sort the dataframe but NOT the factor levels
-  mutate(predictor=factor(predictor, levels=predictor)) %>%   # This trick update the factor levels
+  arrange(true_count) %>%    
+  mutate(predictor=factor(predictor, levels=predictor)) %>%  
   ggplot( aes(x=predictor, y=true_count)) +
   geom_segment( aes(xend=predictor, yend=0)) +
   geom_point( size=4, color="orange") +
@@ -148,8 +148,8 @@ h3plot <- feat_df_h3 %>%
   xlab("")
 
 h6plot <- feat_df_h6 %>%
-  arrange(true_count) %>%    # First sort by val. This sort the dataframe but NOT the factor levels
-  mutate(predictor=factor(predictor, levels=predictor)) %>%   # This trick update the factor levels
+  arrange(true_count) %>%    
+  mutate(predictor=factor(predictor, levels=predictor)) %>%  
   ggplot( aes(x=predictor, y=true_count)) +
   geom_segment( aes(xend=predictor, yend=0)) +
   geom_point( size=4, color="orange") +
@@ -157,7 +157,7 @@ h6plot <- feat_df_h6 %>%
   theme_bw() +
   xlab("")
 
-# show plot
+# Show plot
 print(h1plot)
 print(h3plot)
 print(h6plot)
