@@ -124,6 +124,44 @@ bestM2_mean = which.min(missclass2_mean) # bestM = 1602
 cv_min2_mean = min(missclass2_mean/ncrossv) # cv_min=0.14
 
 
+# CV -- sample mean method, h=3
+cv_boost_mean_h3 = matrix(0,ncrossv,M) #blank for CV criteria, d=5
+for(i in ncrossv:1){#NB: backwards FOR loop: going from 100 down to 1
+  X.window = X_CV_h3[(1+ncrossv-i):(nrow(X_CV_h3)-i),] #define the estimation window (first one: 1 to 332, then 2 to 333 etc, till 100 to 431.)
+  y.window = y_cv[(1+ncrossv-i):(length(y_cv)-i)]
+  boost = runboost(X.window, y.window)
+  cv_boost_mean_h3[(1+ncrossv-i), ] = matrix(boost$pred > y_sample_mean) # save the forecast
+  cat("iteration", (1+ncrossv-i), "\n") # display iteration number
+}
+
+real = tail(y_cv, ncrossv)
+missclass_mean_h3 = colSums(abs(real-cv_boost_mean_h3)) # compute misclassification rate
+bestM_mean_h3 = which.min(missclass_mean_h3) # bestM = 671
+cv_min_mean_h3 = min(missclass_mean_h3/ncrossv) # cv_min=0.14
+
+
+
+
+# CV -- sample mean method, h=6
+cv_boost_mean_h6 = matrix(0,ncrossv,M) #blank for CV criteria, d=5
+for(i in ncrossv:1){#NB: backwards FOR loop: going from 100 down to 1
+  X.window = X_CV_h6[(1+ncrossv-i):(nrow(X_CV_h6)-i),] #define the estimation window (first one: 1 to 332, then 2 to 333 etc, till 100 to 431.)
+  y.window = y_cv[(1+ncrossv-i):(length(y_cv)-i)]
+  boost = runboost(X.window, y.window)
+  cv_boost_mean_h6[(1+ncrossv-i), ] = matrix(boost$pred > y_sample_mean) # save the forecast
+  cat("iteration", (1+ncrossv-i), "\n") # display iteration number
+}
+
+real = tail(y_cv, ncrossv)
+missclass_mean_h6 = colSums(abs(real-cv_boost_mean_h6)) # compute misclassification rate
+bestM_mean_h6 = which.min(missclass_mean_h6) # bestM = 523
+cv_min_mean_h6 = min(missclass_mean_h6/ncrossv) # cv_min=0.14
+
+
+
+
+
+
 # h=3, X from lag 3-8, Y starts with lag7
 X_CV_h3 = head(X_h3, ntrain+ncrossv)   # remove test set
 y_cv = head(Y, ntrain+ncrossv)
@@ -331,19 +369,47 @@ saveRDS(test_result, file = "data/boosting_gbm_prediction.RDS")
 
 
 
-# test -- for sample mean method
-test_result_sample_mean <- data.frame(matrix(NA, nrow = 150, ncol = 1))
-colnames(test_result_sample_mean) <- c("1-step ahead forecast")
+# test -- for sample mean method, h=1
+test_result_sample_mean <- data.frame(matrix(NA, nrow = 150, ncol = 3))
+colnames(test_result_sample_mean) <- c("1-step ahead forecast", "3-step ahead forecast", "6-step ahead forecast")
 # h=1: best model -- tree size = bestM_mean = 737
 test_X_h1 = X_h1
 y_test = Y
+test_boost_mean = matrix(0,ntest,1)
 for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
   X.window = test_X_h1[(1+ntest-i):(nrow(test_X_h1)-i),] #define the estimation window (first one: 1 to 421, then 2 to 422 etc, till 150 to 570)
   y.window = y_test[(1+ntest-i):(length(y_test)-i)]
   boost = runboost_setn(X.window, y.window, n=737)
-  test_result_sample_mean[(1+ntest-i), 1] = boost$pred # save the forecast
+  test_boost_mean[(1+ntest-i), 1] = boost$pred # save the forecast
   cat("iteration", (1+ntest-i), "\n") # display iteration number
 }
+test_result_sample_mean$`1-step ahead forecast` = test_boost_mean
+
+# h=3: best model -- tree size = bestM_mean_h3 = 671
+test_X_h3 = X_h3
+y_test = Y
+test_boost_mean_h3 = matrix(0,ntest,1)
+for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
+  X.window = test_X_h3[(1+ntest-i):(nrow(test_X_h3)-i),] #define the estimation window (first one: 1 to 421, then 2 to 422 etc, till 150 to 570)
+  y.window = y_test[(1+ntest-i):(length(y_test)-i)]
+  boost = runboost_setn(X.window, y.window, n=671)
+  test_boost_mean_h3[(1+ntest-i), 1] = boost$pred # save the forecast
+  cat("iteration", (1+ntest-i), "\n") # display iteration number
+}
+test_result_sample_mean$`3-step ahead forecast` = test_boost_mean_h3
+
+# h=6: best model -- tree size = bestM_mean_h6 = 523
+test_X_h6 = X_h6
+y_test = Y
+test_boost_mean_h6 = matrix(0,ntest,1)
+for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
+  X.window = test_X_h6[(1+ntest-i):(nrow(test_X_h6)-i),] #define the estimation window (first one: 1 to 421, then 2 to 422 etc, till 150 to 570)
+  y.window = y_test[(1+ntest-i):(length(y_test)-i)]
+  boost = runboost_setn(X.window, y.window, n=523)
+  test_boost_mean_h6[(1+ntest-i), 1] = boost$pred # save the forecast
+  cat("iteration", (1+ntest-i), "\n") # display iteration number
+}
+test_result_sample_mean$`6-step ahead forecast` = test_boost_mean_h6
 
 # save result
 saveRDS(test_result_sample_mean, file = "data/boosting_gbm_sample_mean_prediction.RDS")
