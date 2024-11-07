@@ -45,6 +45,9 @@ X_h6 = data %>%
   select(-c(lag6_market_state, lag7_market_state, lag8_market_state, lag9_market_state, lag10_market_state, lag11_market_state)) %>% # keep lag 12-17 for Y
   as.matrix()
 
+
+######################################################################################################################################
+
 runboost = function(X, y) {
   X_temp = as.data.frame(X)
   X.out=tail(X_temp,1)
@@ -64,6 +67,10 @@ runboost2 = function(X, y) {
   temp.fit = predict(temp.boost, as.data.frame(X.out), n.trees = seq(1, M, 1), type = "response") #prediction for d=5
   return(list("model"=temp.boost,"pred"=temp.fit))
 }
+
+
+######################################################################################################################################
+
 
 # cross validation
 # h=1, X from lag 1-6, Y starts with lag7
@@ -90,72 +97,6 @@ cv_min = min(missclass/ncrossv) # cv_min=0.14
 missclass2 = colSums(abs(real-cv_boost2)) # compute misclassification rate
 bestM2 = which.min(missclass2) # bestM = 1013
 cv_min2 = min(missclass2/ncrossv) # cv_min = 0.13
-
-
-
-
-
-
-
-
-# CV -- sample mean method, h=1
-y_train = head(Y, ntrain)
-y_sample_mean = mean(y_train)
-
-cv_boost_mean = matrix(0,ncrossv,M) #blank for CV criteria, d=5
-cv_boost2_mean = matrix(0,ncrossv,M) #blank for CV criteria, d=2
-for(i in ncrossv:1){#NB: backwards FOR loop: going from 100 down to 1
-  X.window = X_CV_h1[(1+ncrossv-i):(nrow(X_CV_h1)-i),] #define the estimation window (first one: 1 to 332, then 2 to 333 etc, till 100 to 431.)
-  y.window = y_cv[(1+ncrossv-i):(length(y_cv)-i)]
-  boost = runboost(X.window, y.window)
-  # boost2 = runboost2(X.window, y.window)
-  cv_boost_mean[(1+ncrossv-i), ] = matrix(boost$pred > y_sample_mean) # save the forecast
-  # cv_boost2_mean[(1+ncrossv-i), ] = matrix(boost2$pred > y_sample_mean) # save the forecast
-  cat("iteration", (1+ncrossv-i), "\n") # display iteration number
-}
-
-real = tail(y_cv, ncrossv)
-missclass_mean = colSums(abs(real-cv_boost_mean)) # compute misclassification rate
-bestM_mean = which.min(missclass_mean) # bestM = 737
-cv_min_mean = min(missclass_mean/ncrossv) # cv_min=0.14
-
-missclass2_mean = colSums(abs(real-cv_boost2_mean)) # compute misclassification rate
-bestM2_mean = which.min(missclass2_mean) # bestM = 1602
-cv_min2_mean = min(missclass2_mean/ncrossv) # cv_min=0.14
-
-
-# CV -- sample mean method, h=3
-cv_boost_mean_h3 = matrix(0,ncrossv,M) #blank for CV criteria, d=5
-for(i in ncrossv:1){#NB: backwards FOR loop: going from 100 down to 1
-  X.window = X_CV_h3[(1+ncrossv-i):(nrow(X_CV_h3)-i),] #define the estimation window (first one: 1 to 332, then 2 to 333 etc, till 100 to 431.)
-  y.window = y_cv[(1+ncrossv-i):(length(y_cv)-i)]
-  boost = runboost(X.window, y.window)
-  cv_boost_mean_h3[(1+ncrossv-i), ] = matrix(boost$pred > y_sample_mean) # save the forecast
-  cat("iteration", (1+ncrossv-i), "\n") # display iteration number
-}
-
-real = tail(y_cv, ncrossv)
-missclass_mean_h3 = colSums(abs(real-cv_boost_mean_h3)) # compute misclassification rate
-bestM_mean_h3 = which.min(missclass_mean_h3) # bestM = 671
-cv_min_mean_h3 = min(missclass_mean_h3/ncrossv) # cv_min=0.14
-
-
-
-
-# CV -- sample mean method, h=6
-cv_boost_mean_h6 = matrix(0,ncrossv,M) #blank for CV criteria, d=5
-for(i in ncrossv:1){#NB: backwards FOR loop: going from 100 down to 1
-  X.window = X_CV_h6[(1+ncrossv-i):(nrow(X_CV_h6)-i),] #define the estimation window (first one: 1 to 332, then 2 to 333 etc, till 100 to 431.)
-  y.window = y_cv[(1+ncrossv-i):(length(y_cv)-i)]
-  boost = runboost(X.window, y.window)
-  cv_boost_mean_h6[(1+ncrossv-i), ] = matrix(boost$pred > y_sample_mean) # save the forecast
-  cat("iteration", (1+ncrossv-i), "\n") # display iteration number
-}
-
-real = tail(y_cv, ncrossv)
-missclass_mean_h6 = colSums(abs(real-cv_boost_mean_h6)) # compute misclassification rate
-bestM_mean_h6 = which.min(missclass_mean_h6) # bestM = 523
-cv_min_mean_h6 = min(missclass_mean_h6/ncrossv) # cv_min=0.14
 
 
 
@@ -214,6 +155,10 @@ cv_min_h6 = min(missclass_h6/ncrossv) # cv_min=0.14
 missclass2_h6 = colSums(abs(real-cv_boost2_h6)) # compute misclassification rate
 bestM2_h6 = which.min(missclass2_h6) # bestM = 1241
 cv_min2_h6 = min(missclass2_h6/ncrossv) # cv_min = 0.14
+
+
+######################################################################################################################################
+
 
 
 # test
@@ -292,11 +237,6 @@ mean_importance = bind_rows(save.importance) %>%
 
 
 
-
-
-
-
-
 # h=3: best model -- depth=5, tree size = bestM_h3 = 529
 test_X_h3 = X_h3
 y_test = Y
@@ -367,6 +307,70 @@ saveRDS(test_result, file = "data/boosting_gbm_prediction.RDS")
 
 
 
+######################################################################################################################################
+
+
+
+# CV -- sample mean method, h=1
+y_train = head(Y, ntrain)
+y_sample_mean = mean(y_train)
+
+cv_boost_mean = matrix(0,ncrossv,M) #blank for CV criteria, d=5
+cv_boost2_mean = matrix(0,ncrossv,M) #blank for CV criteria, d=2
+for(i in ncrossv:1){#NB: backwards FOR loop: going from 100 down to 1
+  X.window = X_CV_h1[(1+ncrossv-i):(nrow(X_CV_h1)-i),] #define the estimation window (first one: 1 to 332, then 2 to 333 etc, till 100 to 431.)
+  y.window = y_cv[(1+ncrossv-i):(length(y_cv)-i)]
+  boost = runboost(X.window, y.window)
+  # boost2 = runboost2(X.window, y.window)
+  cv_boost_mean[(1+ncrossv-i), ] = matrix(boost$pred > y_sample_mean) # save the forecast
+  # cv_boost2_mean[(1+ncrossv-i), ] = matrix(boost2$pred > y_sample_mean) # save the forecast
+  cat("iteration", (1+ncrossv-i), "\n") # display iteration number
+}
+
+real = tail(y_cv, ncrossv)
+missclass_mean = colSums(abs(real-cv_boost_mean)) # compute misclassification rate
+bestM_mean = which.min(missclass_mean) # bestM = 737
+cv_min_mean = min(missclass_mean/ncrossv) # cv_min=0.14
+
+missclass2_mean = colSums(abs(real-cv_boost2_mean)) # compute misclassification rate
+bestM2_mean = which.min(missclass2_mean) # bestM = 1602
+cv_min2_mean = min(missclass2_mean/ncrossv) # cv_min=0.14
+
+
+# CV -- sample mean method, h=3
+cv_boost_mean_h3 = matrix(0,ncrossv,M) #blank for CV criteria, d=5
+for(i in ncrossv:1){#NB: backwards FOR loop: going from 100 down to 1
+  X.window = X_CV_h3[(1+ncrossv-i):(nrow(X_CV_h3)-i),] #define the estimation window (first one: 1 to 332, then 2 to 333 etc, till 100 to 431.)
+  y.window = y_cv[(1+ncrossv-i):(length(y_cv)-i)]
+  boost = runboost(X.window, y.window)
+  cv_boost_mean_h3[(1+ncrossv-i), ] = matrix(boost$pred > y_sample_mean) # save the forecast
+  cat("iteration", (1+ncrossv-i), "\n") # display iteration number
+}
+
+real = tail(y_cv, ncrossv)
+missclass_mean_h3 = colSums(abs(real-cv_boost_mean_h3)) # compute misclassification rate
+bestM_mean_h3 = which.min(missclass_mean_h3) # bestM = 671
+cv_min_mean_h3 = min(missclass_mean_h3/ncrossv) # cv_min=0.14
+
+
+# CV -- sample mean method, h=6
+cv_boost_mean_h6 = matrix(0,ncrossv,M) #blank for CV criteria, d=5
+for(i in ncrossv:1){#NB: backwards FOR loop: going from 100 down to 1
+  X.window = X_CV_h6[(1+ncrossv-i):(nrow(X_CV_h6)-i),] #define the estimation window (first one: 1 to 332, then 2 to 333 etc, till 100 to 431.)
+  y.window = y_cv[(1+ncrossv-i):(length(y_cv)-i)]
+  boost = runboost(X.window, y.window)
+  cv_boost_mean_h6[(1+ncrossv-i), ] = matrix(boost$pred > y_sample_mean) # save the forecast
+  cat("iteration", (1+ncrossv-i), "\n") # display iteration number
+}
+
+real = tail(y_cv, ncrossv)
+missclass_mean_h6 = colSums(abs(real-cv_boost_mean_h6)) # compute misclassification rate
+bestM_mean_h6 = which.min(missclass_mean_h6) # bestM = 523
+cv_min_mean_h6 = min(missclass_mean_h6/ncrossv) # cv_min=0.14
+
+
+######################################################################################################################################
+
 
 
 # test -- for sample mean method, h=1
@@ -416,6 +420,7 @@ saveRDS(test_result_sample_mean, file = "data/boosting_gbm_sample_mean_predictio
 
 
 
+######################################################################################################################################
 
 
 
@@ -445,6 +450,11 @@ runboost2_xgb = function(X, y) {
   }
   return(list("model"=temp.boost,"pred"=pred_matrix))
 }
+
+
+######################################################################################################################################
+
+
 
 # cross validation
 # h=1, X from lag 1-6, Y starts with lag7
@@ -524,6 +534,10 @@ cv_min_xgb_h6 = min(missclass_xgb_h6/ncrossv) # cv_min=0.14
 missclass2_xgb_h6 = colSums(abs(real-cv_boost2_xgb_h6)) # compute misclassification rate
 bestM2_xgb_h6 = which.min(missclass2_xgb_h6) # bestM = 1034
 cv_min2_xgb_h6 = min(missclass2_xgb_h6/ncrossv) # cv_min = 0.14
+
+
+
+######################################################################################################################################
 
 
 
@@ -644,41 +658,5 @@ ggplot(df_plot_xgb, aes(x = factor(horizon), y = average_importance, fill = grou
 
 saveRDS(test_result_xgb, file = "data/boosting_xgb_prediction.RDS")
 
-
-
-
-
-
-
-
-
-
-
-
-
-results_logit_h1 <- data %>%
-  filter(!is.na(predicted_prob_logit_h1))
-
-# Define portfolio strategy based on forecast probabilities
-data$strategy_return <- ifelse(
-  data$predicted_prob_logit_h1 > 0.5,  # Threshold of 0.5 for investment in stocks
-  data$ret,          # Invest in stocks: Use the stock return
-  data$tbl         # Invest in risk-free asset: Use T-bill rate
-)
-
-# Calculate cumulative returns from the strategy
-data$cum_strategy_return <- cumprod(1 + data$strategy_return) - 1
-
-# Optional: Use sample average threshold instead of 50%
-sample_avg_threshold <- mean(data$market_state)  # Calculate sample average of bear markets
-
-data$strategy_return_avg <- ifelse(
-  data$predicted_prob_logit_h1 > sample_avg_threshold,
-  data$ret,
-  data$tbl
-)
-
-# Calculate cumulative returns using sample average threshold strategy
-data$cum_strategy_return_avg <- cumprod(1 + data$strategy_return_avg) - 1
 
 
