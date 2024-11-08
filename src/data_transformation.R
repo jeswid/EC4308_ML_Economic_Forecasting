@@ -63,5 +63,3 @@ for (x in index_vars_firstdiff) {
 
 # update data
 saveRDS(df, file = "data/complete_data_df_transformed.RDS")
-
-
