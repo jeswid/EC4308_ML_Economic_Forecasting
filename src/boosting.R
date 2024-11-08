@@ -290,6 +290,11 @@ mean_importance_h6 = bind_rows(save.importance_h6) %>%
 df_plot = rbind(mean_importance, mean_importance_h3, mean_importance_h6) %>%
   group_by(group, horizon)
 
+
+# save result
+saveRDS(df_plot, file = "data/boosting_gbm_importance.RDS")
+
+
 ggplot(df_plot, aes(x = factor(horizon), y = average_importance, fill = group)) + 
   geom_bar(stat = "identity", position = "stack") +  # Stack bars by horizon
   geom_text(aes(label = round(average_importance, 2)), 
@@ -643,6 +648,10 @@ mean_importance_xgb_h6 = bind_rows(save.importance_xgb_h6) %>%
 
 df_plot_xgb = rbind(mean_importance_xgb, mean_importance_xgb_h3, mean_importance_xgb_h6) %>%
   group_by(group, horizon)
+
+# save result
+saveRDS(df_plot_xgb, file = "data/boosting_xgb_importance.RDS")
+
 
 ggplot(df_plot_xgb, aes(x = factor(horizon), y = average_importance, fill = group)) + 
   geom_bar(stat = "identity", position = "stack") +  # Stack bars by horizon
