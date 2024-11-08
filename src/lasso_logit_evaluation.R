@@ -5,8 +5,8 @@ library(caret)
 rm(list = ls())
 
 eval_model <- function(n) {
-  data <- readRDS("lasso_logit_predictions.rds")
-  data2 <- readRDS("final_cleaned_data_with_bull_bear.RDS")
+  data <- readRDS("data/lasso_logit_predictions.rds")
+  data2 <- readRDS("data/final_cleaned_data_with_bull_bear.RDS")
   data <- inner_join(data, data2, by = c("Date" = "DATE"))
   data <- data %>% filter(!is.na(.data[[n]]))
   
