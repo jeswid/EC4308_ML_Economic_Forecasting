@@ -54,6 +54,9 @@ data <- data %>%
   left_join(predicted_probs_logit_h6_df, by = "date") %>%
   rename(predicted_prob_logit_h6 = prob)
 
+# Save predicted values as RDS file
+saveRDS(data, file = "data/logit_predictions.rds")
+
 # Output dimensions of each prediction set for verification
 cat("H1 Predictions:", nrow(predicted_probs_logit_h1_df), "\n")
 cat("H3 Predictions:", nrow(predicted_probs_logit_h3_df), "\n")

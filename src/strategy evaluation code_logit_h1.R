@@ -2,8 +2,23 @@
 # Assuming 'data' contains 'predicted_prob_logit_h1' (forecasted probability of bear market)
 # and 'market_state' (actual market state: 0 = Bear, 1 = Bull)
 
-results_logit_h1 <- data %>%
+data <- data %>%
   filter(!is.na(predicted_prob_logit_h1))
+
+results_lasso <- readRDS("data/lasso_logit_predictions.rds") %>%
+  rename(predicted_prob_lasso_h1 = h1_forecast, 
+         predicted_prob_lasso_h3 = h3_forecast,
+         predicted_prob_lasso_h6 = h6_forecast,) %>%
+  filter(!is.na(predicted_prob_lasso_h1))
+
+#results_boosting_h1 <- data %>%
+#  filter(!is.na(predicted_prob_logit_h1))
+
+#results_bagging_h1 <- data %>%
+#  filter(!is.na(predicted_prob_logit_h1))
+
+data = data %>%
+  left_join(results_lasso, by = date)
 
 # Define portfolio strategy based on forecast probabilities
 data$strategy_return <- ifelse(
