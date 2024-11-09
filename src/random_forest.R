@@ -305,7 +305,7 @@ test_result_bagging$`6-step ahead predicted probability` = h6_bagging$pred_prob
 
 test_result_bagging$DATE = tail(data$DATE, 150)
 
-saveRDS(test_result_rf, file = "data/bagging_prediction.RDS")
+saveRDS(test_result_bagging, file = "data/bagging_prediction.RDS")
 
 
 # feature importance plot
