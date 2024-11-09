@@ -6,7 +6,7 @@ library(purrr)
 
 rm(list = ls())
 
-data <- readRDS("final_cleaned_data_with_bull_bear.RDS")
+data <- readRDS("data/final_cleaned_data_with_bull_bear.RDS")
 
 # Sort data according to time
 data <- data[order(data$DATE), ]
