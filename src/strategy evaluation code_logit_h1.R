@@ -34,7 +34,7 @@ results_boosting_xgb <- readRDS("data/boosting_xgb_prediction.RDS") %>%
 
 data = results %>%
   left_join(results_lasso, by = c("date" = "Date")) %>%
-  left_join(results)
+  left_join(results_boosting_gbm, by = c("date" = "test_date"))
 
 # Define portfolio strategy based on forecast probabilities
 data$strategy_return_logit <- ifelse(
