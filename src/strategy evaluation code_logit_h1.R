@@ -167,19 +167,25 @@ data$cum_strategy_return_avg_bagging <- cumprod(1 + data$strategy_return_avg_bag
 data$cum_strategy_return_avg_random_forest <- cumprod(1 + data$strategy_return_avg_random_forest) - 1
 
 # Print summary statistics of the strategies
-summary(data$cum_strategy_return_logit)
-summary(data$cum_strategy_return_lasso)
 summary(data$cum_strategy_return_avg_logit)
 summary(data$cum_strategy_return_avg_lasso)
+summary(data$cum_strategy_return_avg_boosting_gbm)
+summary(data$cum_strategy_return_avg_boosting_gbm_sample_mean)
+summary(data$cum_strategy_return_avg_boosting_xgb)
+summary(data$cum_strategy_return_avg_bagging)
+summary(data$cum_strategy_return_avg_random_forest)
 
 # Plotting cumulative returns
 library(ggplot2)
 ggplot(data, aes(x = date)) +
-  geom_line(aes(y = cum_strategy_return_logit, color = "Logit 50% Threshold")) +
-  geom_line(aes(y = cum_strategy_return_lasso, color = "LASSO 50% Threshold")) +
-  geom_line(aes(y = cum_strategy_return_avg_logit, color = "Logit Sample Average Threshold")) +
-  geom_line(aes(y = cum_strategy_return_avg_lasso, color = "LASSO Sample Average Threshold")) +
-  labs(title = "Cumulative Portfolio Returns", y = "Cumulative Return", x = "Date") +
+  geom_line(aes(y = cum_strategy_return_avg_logit, color = "Logit")) +
+  geom_line(aes(y = cum_strategy_return_avg_lasso, color = "LASSO Logit")) +
+  #geom_line(aes(y = cum_strategy_return_avg_boosting_gbm, color = "Boosting GBM")) +
+  #geom_line(aes(y = cum_strategy_return_avg_boosting_gbm_sample_mean, color = "Boosting GBM using sample mean")) +
+  geom_line(aes(y = cum_strategy_return_avg_boosting_xgb, color = "Boosting XGB")) +
+  geom_line(aes(y = cum_strategy_return_avg_bagging, color = "Bagging")) +
+  geom_line(aes(y = cum_strategy_return_avg_random_forest, color = "Random Forest")) +
+  labs(title = "Cumulative Portfolio Returns Using Sample Average Threshold", y = "Cumulative Return", x = "Date") +
   theme_minimal()
 
 #using the two sided moving average threshold
