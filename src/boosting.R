@@ -1,7 +1,5 @@
 rm(list=ls())
 
-# install.packages("randomForest")
-# install.packages("xgboost")
 library(randomForest)
 library(gbm)
 library(dplyr)
@@ -12,18 +10,22 @@ data$DATE <- as.Date(data$DATE)
 # Sort the data by date
 data <- data[order(data$DATE), ]
 
-# remove DATE column
-data = data %>% select(-DATE)
-
 data <- data[-(1:17), ]  # align for missing data due to 17 lags of Y
 data = head(data, -6) # remove last 6 rows due to inaccurate market state
 Y = data$market_state
+
+# get date column for test set
+test_date = tail(data$DATE, 150)
+
+# remove DATE column
+data = data %>% select(-DATE)
 
 ntest = 150
 ncrossv = 100 
 ntrain = nrow(data) - ncrossv - ntest
 
-# h=1, X from lag 1-6, Y starts with lag7
+# Prepare data for different forecast horizons
+# h=1, X from lag 1-6, Y from lag 7-12
 X_h1 = data %>% 
   select(starts_with("lag")) %>% # remove present values 
   select(-starts_with("lag7_"), -starts_with("lag8_"), -starts_with("lag9_"), -starts_with("lag10_"), -starts_with("lag11_"), ends_with("market_state")) %>% # keep lag 1-6 for X variables, but keep all lags of Y first
@@ -31,6 +33,7 @@ X_h1 = data %>%
             lag13_market_state, lag14_market_state, lag15_market_state, lag16_market_state, lag17_market_state)) %>% # keep lag 7-12 for Y
   as.matrix()
 
+# h=3, X from lag 3-8, Y from lag 9-14
 X_h3 = data %>% 
   select(starts_with("lag")) %>% # remove present values 
   select(-starts_with("lag1_")) %>% select(-starts_with("lag2_")) %>% 
@@ -39,6 +42,7 @@ X_h3 = data %>%
             lag15_market_state, lag16_market_state, lag17_market_state)) %>% # keep lag 9-14 for Y
   as.matrix()
 
+# h=6, X from lag 6-11, Y from lag 12-17
 X_h6 = data %>% 
   select(starts_with("lag")) %>% # remove present values 
   select(-starts_with("lag1_"), -starts_with("lag2_"), -starts_with("lag3_"), -starts_with("lag4_"), -starts_with("lag5_")) %>% # keep lag 6-11 for X variables
@@ -71,9 +75,10 @@ runboost2 = function(X, y) {
 
 ######################################################################################################################################
 
+# GBM method with 0.5 threshold
 
 # cross validation
-# h=1, X from lag 1-6, Y starts with lag7
+# h=1
 X_CV_h1 = head(X_h1, ntrain+ncrossv)   # remove test set
 y_cv = head(Y, ntrain+ncrossv)
 M = 10000 # Max number of trees considered
@@ -82,10 +87,10 @@ cv_boost2 = matrix(0,ncrossv,M) #blank for CV criteria, d=2
 for(i in ncrossv:1){#NB: backwards FOR loop: going from 100 down to 1
   X.window = X_CV_h1[(1+ncrossv-i):(nrow(X_CV_h1)-i),] #define the estimation window (first one: 1 to 321, then 2 to 322 etc, till 100 to 420)
   y.window = y_cv[(1+ncrossv-i):(length(y_cv)-i)]
-  # boost = runboost(X.window, y.window)
-  boost2 = runboost2(X.window, y.window)
-  # cv_boost[(1+ncrossv-i), ] = matrix(boost$pred > 0.5) # save the forecast
-  cv_boost2[(1+ncrossv-i), ] = matrix(boost2$pred > 0.5) # save the forecast
+  boost = runboost(X.window, y.window)
+  # boost2 = runboost2(X.window, y.window)
+  cv_boost[(1+ncrossv-i), ] = matrix(boost$pred > 0.5) # save the forecast
+  # cv_boost2[(1+ncrossv-i), ] = matrix(boost2$pred > 0.5) # save the forecast
   cat("iteration", (1+ncrossv-i), "\n") # display iteration number
 }
 
@@ -100,10 +105,7 @@ cv_min2 = min(missclass2/ncrossv) # cv_min = 0.13
 
 
 
-
-
-
-# h=3, X from lag 3-8, Y starts with lag7
+# h=3
 X_CV_h3 = head(X_h3, ntrain+ncrossv)   # remove test set
 y_cv = head(Y, ntrain+ncrossv)
 M = 10000 # Max number of trees considered
@@ -112,10 +114,10 @@ cv_boost2_h3 = matrix(0,ncrossv,M) #blank for CV criteria, d=2
 for(i in ncrossv:1){#NB: backwards FOR loop: going from 100 down to 1
   X.window = X_CV_h3[(1+ncrossv-i):(nrow(X_CV_h3)-i),] #define the estimation window (first one: 1 to 321, then 2 to 322 etc, till 100 to 420)
   y.window = y_cv[(1+ncrossv-i):(length(y_cv)-i)]
-  # boost = runboost(X.window, y.window)
-  boost2 = runboost2(X.window, y.window)
-  # cv_boost_h3[(1+ncrossv-i), ] = matrix(boost$pred > 0.5) # save the forecast
-  cv_boost2_h3[(1+ncrossv-i), ] = matrix(boost2$pred > 0.5) # save the forecast
+  boost = runboost(X.window, y.window)
+  # boost2 = runboost2(X.window, y.window)
+  cv_boost_h3[(1+ncrossv-i), ] = matrix(boost$pred > 0.5) # save the forecast
+  # cv_boost2_h3[(1+ncrossv-i), ] = matrix(boost2$pred > 0.5) # save the forecast
   cat("iteration", (1+ncrossv-i), "\n") # display iteration number
 }
 
@@ -130,8 +132,7 @@ cv_min2_h3 = min(missclass2_h3/ncrossv) # cv_min = 0.14
 
 
 
-
-# h=6, X from lag 6-11, Y starts with lag7
+# h=6
 X_CV_h6 = head(X_h6, ntrain+ncrossv)   # remove test set
 y_cv = head(Y, ntrain+ncrossv)
 M = 10000 # Max number of trees considered
@@ -140,10 +141,10 @@ cv_boost2_h6 = matrix(0,ncrossv,M) #blank for CV criteria, d=2
 for(i in ncrossv:1){#NB: backwards FOR loop: going from 100 down to 1
   X.window = X_CV_h6[(1+ncrossv-i):(nrow(X_CV_h6)-i),] #define the estimation window (first one: 1 to 321, then 2 to 322 etc, till 100 to 420)
   y.window = y_cv[(1+ncrossv-i):(length(y_cv)-i)]
-  # boost = runboost(X.window, y.window)
-  boost2 = runboost2(X.window, y.window)
-  # cv_boost_h6[(1+ncrossv-i), ] = matrix(boost$pred > 0.5) # save the forecast
-  cv_boost2_h6[(1+ncrossv-i), ] = matrix(boost2$pred > 0.5) # save the forecast
+  boost = runboost(X.window, y.window)
+  # boost2 = runboost2(X.window, y.window)
+  cv_boost_h6[(1+ncrossv-i), ] = matrix(boost$pred > 0.5) # save the forecast
+  # cv_boost2_h6[(1+ncrossv-i), ] = matrix(boost2$pred > 0.5) # save the forecast
   cat("iteration", (1+ncrossv-i), "\n") # display iteration number
 }
 
@@ -158,8 +159,6 @@ cv_min2_h6 = min(missclass2_h6/ncrossv) # cv_min = 0.14
 
 
 ######################################################################################################################################
-
-
 
 # test
 test_result <- data.frame(matrix(NA, nrow = 150, ncol = 3))
@@ -192,7 +191,45 @@ for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
 }
 test_result$`1-step ahead forecast` = test_boost
 
-# feature importance plot
+
+# h=3: best model -- depth=5, tree size = bestM_h3 = 529
+test_X_h3 = X_h3
+y_test = Y
+test_boost_h3 = matrix(0,ntest,1) #blank for CV criteria, d=5
+save.importance_h3 = list()
+for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
+  X.window = test_X_h3[(1+ntest-i):(nrow(test_X_h3)-i),] #define the estimation window (first one: 1 to 421, then 2 to 422 etc, till 150 to 570)
+  y.window = y_test[(1+ntest-i):(length(y_test)-i)]
+  boost = runboost_setn(X.window, y.window, n=529)
+  test_boost_h3[(1+ntest-i), 1] = boost$pred # save the forecast
+  save.importance_h3[[i]]=boost$importance #save variable importance
+  cat("iteration", (1+ntest-i), "\n") # display iteration number
+}
+test_result$`3-step ahead forecast` = test_boost_h3
+
+
+# h=6: best model -- depth=5, tree size = bestM_h6 = 572
+test_X_h6 = X_h6
+y_test = Y
+test_boost_h6 = matrix(0,ntest,1) #blank for CV criteria, d=5
+save.importance_h6 = list()
+for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
+  X.window = test_X_h6[(1+ntest-i):(nrow(test_X_h6)-i),] #define the estimation window (first one: 1 to 421, then 2 to 422 etc, till 150 to 570)
+  y.window = y_test[(1+ntest-i):(length(y_test)-i)]
+  boost = runboost_setn(X.window, y.window, n=572)
+  test_boost_h6[(1+ntest-i), 1] = boost$pred # save the forecast
+  save.importance_h6[[i]]=boost$importance #save variable importance
+  cat("iteration", (1+ntest-i), "\n") # display iteration number
+}
+test_result$`6-step ahead forecast` = test_boost_h6
+
+
+# save result
+test_result = cbind(test_date, test_result)
+saveRDS(test_result, file = "data/boosting_gbm_prediction.RDS")
+
+
+# groups for feature importance plot
 price_div_earn = grep("(ret(x)?|ratio|yield|payout|book_market|fbm|price|dividend|earnings|rate_gs10|TR_CAPE)$", colnames(data), value = TRUE) # ret, retx, dividend_price_ratio, dividend_yield, earnings_price_ratio, dividend_payout, book_market, fbm, price, dividend, earnings, rate_gs10, TR_CAPE
 return_yield = grep("(AA|lty|ltr|corpr|tbl|Rfree|tms|dfy|dfr|ygap|returns)$", colnames(data), value = TRUE) # AAA, BAA, lty, ltr, corpr, Rfree, term_spread, dfy, dfr, ygap, monthly_total_bond_returns
 econ_indicator = grep("(infl|ntis|ogap|wtexas|CPI|UNRATE|DFF|INDPRO)$", colnames(data), value = TRUE) # infl, ntis, ogap, wtexas, CPI, UNRATE, DFF, INDPRO
@@ -225,32 +262,6 @@ mean_importance = bind_rows(save.importance) %>%
   arrange(desc(average_importance)) %>%
   mutate(horizon = 1)
 
-# ggplot(mean_importance_grouped, aes(x = reorder(group, average_importance), y = average_importance, fill = group)) +
-#   geom_bar(stat = "identity") +
-#   coord_flip() +
-#   geom_text(aes(label = round(average_importance, 2)), hjust = -0.2, size = 3.5) +  # Add text labels with rounded values
-#   labs(title = "Average Feature Importance h=1", x = "", y = "Average Importance") +
-#   scale_fill_brewer(palette = "Set3") +  # Use a color palette for groups
-#   theme_minimal() +
-#   theme(legend.position = "none",  # Remove legend as groups are labeled
-#         plot.title = element_text(hjust = 0.5, face = "bold"))  # Center and bold title
-
-
-
-# h=3: best model -- depth=5, tree size = bestM_h3 = 529
-test_X_h3 = X_h3
-y_test = Y
-test_boost_h3 = matrix(0,ntest,1) #blank for CV criteria, d=5
-save.importance_h3 = list()
-for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
-  X.window = test_X_h3[(1+ntest-i):(nrow(test_X_h3)-i),] #define the estimation window (first one: 1 to 421, then 2 to 422 etc, till 150 to 570)
-  y.window = y_test[(1+ntest-i):(length(y_test)-i)]
-  boost = runboost_setn(X.window, y.window, n=529)
-  test_boost_h3[(1+ntest-i), 1] = boost$pred # save the forecast
-  save.importance_h3[[i]]=boost$importance #save variable importance
-  cat("iteration", (1+ntest-i), "\n") # display iteration number
-}
-test_result$`3-step ahead forecast` = test_boost_h3
 
 mean_importance_h3 = bind_rows(save.importance_h3) %>%
   group_by(var) %>%
@@ -262,21 +273,6 @@ mean_importance_h3 = bind_rows(save.importance_h3) %>%
   mutate(horizon = 3)
 
 
-# h=6: best model -- depth=5, tree size = bestM_h6 = 572
-test_X_h6 = X_h6
-y_test = Y
-test_boost_h6 = matrix(0,ntest,1) #blank for CV criteria, d=5
-save.importance_h6 = list()
-for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
-  X.window = test_X_h6[(1+ntest-i):(nrow(test_X_h6)-i),] #define the estimation window (first one: 1 to 421, then 2 to 422 etc, till 150 to 570)
-  y.window = y_test[(1+ntest-i):(length(y_test)-i)]
-  boost = runboost_setn(X.window, y.window, n=572)
-  test_boost_h6[(1+ntest-i), 1] = boost$pred # save the forecast
-  save.importance_h6[[i]]=boost$importance #save variable importance
-  cat("iteration", (1+ntest-i), "\n") # display iteration number
-}
-test_result$`6-step ahead forecast` = test_boost_h6
-
 mean_importance_h6 = bind_rows(save.importance_h6) %>%
   group_by(var) %>%
   summarize(mean_importance = mean(`rel.inf`, na.rm = TRUE)) %>%
@@ -287,9 +283,9 @@ mean_importance_h6 = bind_rows(save.importance_h6) %>%
   mutate(horizon = 6)
 
 
+# bind importance from all 3 horizons for plotting
 df_plot = rbind(mean_importance, mean_importance_h3, mean_importance_h6) %>%
   group_by(group, horizon)
-
 
 # save result
 saveRDS(df_plot, file = "data/boosting_gbm_importance.RDS")
@@ -307,14 +303,9 @@ ggplot(df_plot, aes(x = factor(horizon), y = average_importance, fill = group)) 
         plot.title = element_text(hjust = 0.5, face = "bold"))  # Center and bold title
 
 
-# save result
-saveRDS(test_result, file = "data/boosting_gbm_prediction.RDS")
-
-
-
 ######################################################################################################################################
 
-
+# GBM with sample mean as threshold:
 
 # CV -- sample mean method, h=1
 y_train = head(Y, ntrain)
@@ -376,59 +367,114 @@ cv_min_mean_h6 = min(missclass_mean_h6/ncrossv) # cv_min=0.14
 
 ######################################################################################################################################
 
-
-
 # test -- for sample mean method, h=1
 test_result_sample_mean <- data.frame(matrix(NA, nrow = 150, ncol = 3))
 colnames(test_result_sample_mean) <- c("1-step ahead forecast", "3-step ahead forecast", "6-step ahead forecast")
+
 # h=1: best model -- tree size = bestM_mean = 737
 test_X_h1 = X_h1
 y_test = Y
 test_boost_mean = matrix(0,ntest,1)
+save.importance_samplemean = list()
 for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
   X.window = test_X_h1[(1+ntest-i):(nrow(test_X_h1)-i),] #define the estimation window (first one: 1 to 421, then 2 to 422 etc, till 150 to 570)
   y.window = y_test[(1+ntest-i):(length(y_test)-i)]
   boost = runboost_setn(X.window, y.window, n=737)
   test_boost_mean[(1+ntest-i), 1] = boost$pred # save the forecast
+  save.importance_samplemean[[i]]=boost$importance #save variable importance
   cat("iteration", (1+ntest-i), "\n") # display iteration number
 }
 test_result_sample_mean$`1-step ahead forecast` = test_boost_mean
+
 
 # h=3: best model -- tree size = bestM_mean_h3 = 671
 test_X_h3 = X_h3
 y_test = Y
 test_boost_mean_h3 = matrix(0,ntest,1)
+save.importance_samplemean_h3 = list()
 for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
   X.window = test_X_h3[(1+ntest-i):(nrow(test_X_h3)-i),] #define the estimation window (first one: 1 to 421, then 2 to 422 etc, till 150 to 570)
   y.window = y_test[(1+ntest-i):(length(y_test)-i)]
   boost = runboost_setn(X.window, y.window, n=671)
   test_boost_mean_h3[(1+ntest-i), 1] = boost$pred # save the forecast
+  save.importance_samplemean_h3[[i]]=boost$importance #save variable importance
   cat("iteration", (1+ntest-i), "\n") # display iteration number
 }
 test_result_sample_mean$`3-step ahead forecast` = test_boost_mean_h3
+
 
 # h=6: best model -- tree size = bestM_mean_h6 = 523
 test_X_h6 = X_h6
 y_test = Y
 test_boost_mean_h6 = matrix(0,ntest,1)
+save.importance_samplemean_h6 = list()
 for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
   X.window = test_X_h6[(1+ntest-i):(nrow(test_X_h6)-i),] #define the estimation window (first one: 1 to 421, then 2 to 422 etc, till 150 to 570)
   y.window = y_test[(1+ntest-i):(length(y_test)-i)]
   boost = runboost_setn(X.window, y.window, n=523)
   test_boost_mean_h6[(1+ntest-i), 1] = boost$pred # save the forecast
+  save.importance_samplemean_h6[[i]]=boost$importance #save variable importance
   cat("iteration", (1+ntest-i), "\n") # display iteration number
 }
 test_result_sample_mean$`6-step ahead forecast` = test_boost_mean_h6
 
+
 # save result
+test_result_sample_mean = cbind(test_date, test_result_sample_mean)
 saveRDS(test_result_sample_mean, file = "data/boosting_gbm_sample_mean_prediction.RDS")
+
+
+mean_importance_samplemean = bind_rows(save.importance_samplemean) %>%
+  group_by(var) %>%
+  summarize(mean_importance = mean(`rel.inf`, na.rm = TRUE)) %>%
+  left_join(variable_lookup, by = "var") %>%  # Join by variable name
+  group_by(group) %>%                          # Group by the variable group
+  summarize(average_importance = sum(mean_importance)) %>%
+  arrange(desc(average_importance)) %>%
+  mutate(horizon = 1)
+
+mean_importance_samplemean_h3 = bind_rows(save.importance_samplemean_h3) %>%
+  group_by(var) %>%
+  summarize(mean_importance = mean(`rel.inf`, na.rm = TRUE)) %>%
+  left_join(variable_lookup, by = "var") %>%  # Join by variable name
+  group_by(group) %>%                          # Group by the variable group
+  summarize(average_importance = sum(mean_importance)) %>%
+  arrange(desc(average_importance)) %>%
+  mutate(horizon = 3)
+
+mean_importance_samplemean_h6 = bind_rows(save.importance_samplemean_h6) %>%
+  group_by(var) %>%
+  summarize(mean_importance = mean(`rel.inf`, na.rm = TRUE)) %>%
+  left_join(variable_lookup, by = "var") %>%  # Join by variable name
+  group_by(group) %>%                          # Group by the variable group
+  summarize(average_importance = sum(mean_importance)) %>%
+  arrange(desc(average_importance)) %>%
+  mutate(horizon = 6)
+
+
+df_plot_samplemean = rbind(mean_importance_samplemean, mean_importance_samplemean_h3, mean_importance_samplemean_h6) %>%
+  group_by(group, horizon)
+
+# save result
+saveRDS(df_plot, file = "data/boosting_gbm_importance_samplemean.RDS")
+
+
+ggplot(df_plot_samplemean, aes(x = factor(horizon), y = average_importance, fill = group)) + 
+  geom_bar(stat = "identity", position = "stack") +  # Stack bars by horizon
+  geom_text(aes(label = round(average_importance, 2)), 
+            position = position_stack(vjust = 0.5), size = 3.5) +  # Position text labels at center of each stack
+  labs(title = "GBM Average Feature Importance By Type (sample mean method)", x = "Forecast Horizon", y = "Average Importance") + 
+  scale_fill_brewer(palette = "Set3") +  # Use a color palette for horizons
+  theme_minimal() + 
+  theme(legend.position = "bottom",  # Move legend 3a2below plot
+        legend.title = element_blank(),  # Remove legend title
+        plot.title = element_text(hjust = 0.5, face = "bold"))  # Center and bold title
 
 
 
 ######################################################################################################################################
 
-
-
+# XGB method with 0.5 as threshold
 
 runboost_xgb = function(X, y) {
   X_temp = as.matrix(X)
@@ -459,8 +505,6 @@ runboost2_xgb = function(X, y) {
 
 ######################################################################################################################################
 
-
-
 # cross validation
 # h=1, X from lag 1-6, Y starts with lag7
 X_CV_h1 = head(X_h1, ntrain+ncrossv)   # remove test set
@@ -471,10 +515,10 @@ cv_boost2_xgb = matrix(0,ncrossv,M) #blank for CV criteria, d=2
 for(i in ncrossv:1){#NB: backwards FOR loop: going from 100 down to 1
   X.window = X_CV_h1[(1+ncrossv-i):(nrow(X_CV_h1)-i),] #define the estimation window (first one: 1 to 321, then 2 to 322 etc, till 100 to 420)
   y.window = y_cv[(1+ncrossv-i):(length(y_cv)-i)]
-  # boost = runboost_xgb(X.window, y.window)
-  boost2 = runboost2_xgb(X.window, y.window)
-  # cv_boost_xgb[(1+ncrossv-i), ] = matrix(boost$pred > 0.5) # save the forecast
-  cv_boost2_xgb[(1+ncrossv-i), ] = matrix(boost2$pred > 0.5) # save the forecast
+  boost = runboost_xgb(X.window, y.window)
+  # boost2 = runboost2_xgb(X.window, y.window)
+  cv_boost_xgb[(1+ncrossv-i), ] = matrix(boost$pred > 0.5) # save the forecast
+  # cv_boost2_xgb[(1+ncrossv-i), ] = matrix(boost2$pred > 0.5) # save the forecast
   cat("iteration", (1+ncrossv-i), "\n") # display iteration number
 }
 
@@ -497,10 +541,10 @@ cv_boost2_xgb_h3 = matrix(0,ncrossv,M) #blank for CV criteria, d=2
 for(i in ncrossv:1){#NB: backwards FOR loop: going from 100 down to 1
   X.window = X_CV_h3[(1+ncrossv-i):(nrow(X_CV_h3)-i),] #define the estimation window (first one: 1 to 321, then 2 to 322 etc, till 100 to 420)
   y.window = y_cv[(1+ncrossv-i):(length(y_cv)-i)]
-  # boost = runboost_xgb(X.window, y.window)
-  boost2 = runboost2_xgb(X.window, y.window)
-  # cv_boost_xgb_h3[(1+ncrossv-i), ] = matrix(boost$pred > 0.5) # save the forecast
-  cv_boost2_xgb_h3[(1+ncrossv-i), ] = matrix(boost2$pred > 0.5) # save the forecast
+  boost = runboost_xgb(X.window, y.window)
+  # boost2 = runboost2_xgb(X.window, y.window)
+  cv_boost_xgb_h3[(1+ncrossv-i), ] = matrix(boost$pred > 0.5) # save the forecast
+  # cv_boost2_xgb_h3[(1+ncrossv-i), ] = matrix(boost2$pred > 0.5) # save the forecast
   cat("iteration", (1+ncrossv-i), "\n") # display iteration number
 }
 
@@ -524,10 +568,10 @@ cv_boost2_xgb_h6 = matrix(0,ncrossv,M) #blank for CV criteria, d=2
 for(i in ncrossv:1){#NB: backwards FOR loop: going from 100 down to 1
   X.window = X_CV_h6[(1+ncrossv-i):(nrow(X_CV_h6)-i),] #define the estimation window (first one: 1 to 321, then 2 to 322 etc, till 100 to 420)
   y.window = y_cv[(1+ncrossv-i):(length(y_cv)-i)]
-  # boost = runboost_xgb(X.window, y.window)
-  boost2 = runboost2_xgb(X.window, y.window)
-  # cv_boost_xgb_h6[(1+ncrossv-i), ] = matrix(boost$pred > 0.5) # save the forecast
-  cv_boost2_xgb_h6[(1+ncrossv-i), ] = matrix(boost2$pred > 0.5) # save the forecast
+  boost = runboost_xgb(X.window, y.window)
+  # boost2 = runboost2_xgb(X.window, y.window)
+  cv_boost_xgb_h6[(1+ncrossv-i), ] = matrix(boost$pred > 0.5) # save the forecast
+  # cv_boost2_xgb_h6[(1+ncrossv-i), ] = matrix(boost2$pred > 0.5) # save the forecast
   cat("iteration", (1+ncrossv-i), "\n") # display iteration number
 }
 
@@ -544,8 +588,6 @@ cv_min2_xgb_h6 = min(missclass2_xgb_h6/ncrossv) # cv_min = 0.14
 
 ######################################################################################################################################
 
-
-
 # test
 test_result_xgb <- data.frame(matrix(NA, nrow = 150, ncol = 3))
 colnames(test_result_xgb) <- c("1-step ahead forecast", "3-step ahead forecast", "6-step ahead forecast")
@@ -561,6 +603,7 @@ runboost_setn_xgb = function(X, y, n) { # n is the tree size
   return(list("model"=temp.boost,"pred"=temp.fit, "importance"=temp.importance))
 }
 
+
 # h=1: best model -- depth=5, tree size = bestM_xgb = 40
 test_X_h1 = X_h1
 y_test = Y
@@ -575,19 +618,6 @@ for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
   cat("iteration", (1+ntest-i), "\n") # display iteration number
 }
 test_result_xgb$`1-step ahead forecast` = test_boost_xgb
-
-mean_importance_xgb = bind_rows(save.importance_xgb) %>% 
-  group_by(`Feature`) %>%
-  summarize(mean_importance = mean(`Gain`, na.rm = TRUE)) %>%
-  rename(var = Feature) %>%
-  left_join(variable_lookup, by = "var") %>%  # Join by variable name
-  group_by(group) %>%                          # Group by the variable group
-  summarize(average_importance = sum(mean_importance)) %>%
-  arrange(desc(average_importance)) %>%
-  mutate(average_importance = average_importance * 100 / sum(average_importance),
-         horizon = 1)
-
-
 
 
 # h=3: best model -- depth=5, tree size = bestM_xgb_h3 = 174 
@@ -605,18 +635,6 @@ for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
 }
 test_result_xgb$`3-step ahead forecast` = test_boost_h3_xgb
 
-mean_importance_xgb_h3 = bind_rows(save.importance_xgb_h3) %>% 
-  group_by(`Feature`) %>%
-  summarize(mean_importance = mean(`Gain`, na.rm = TRUE)) %>%
-  rename(var = Feature) %>%
-  left_join(variable_lookup, by = "var") %>%  # Join by variable name
-  group_by(group) %>%                          # Group by the variable group
-  summarize(average_importance = sum(mean_importance)) %>%
-  arrange(desc(average_importance)) %>%
-  mutate(average_importance = average_importance * 100 / sum(average_importance),
-         horizon = 3)
-
-
 
 # h=6: best model -- depth=5, tree size = bestM_xgb_h6 = 65
 test_X_h6 = X_h6
@@ -633,6 +651,33 @@ for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
 }
 test_result_xgb$`6-step ahead forecast` = test_boost_h6_xgb
 
+
+# Save result
+test_result_xgb = cbind(test_date, test_result_xgb)
+saveRDS(test_result_xgb, file = "data/boosting_xgb_prediction.RDS")
+
+
+mean_importance_xgb = bind_rows(save.importance_xgb) %>% 
+  group_by(`Feature`) %>%
+  summarize(mean_importance = mean(`Gain`, na.rm = TRUE)) %>%
+  rename(var = Feature) %>%
+  left_join(variable_lookup, by = "var") %>%  # Join by variable name
+  group_by(group) %>%                          # Group by the variable group
+  summarize(average_importance = sum(mean_importance)) %>%
+  arrange(desc(average_importance)) %>%
+  mutate(average_importance = average_importance * 100 / sum(average_importance),
+         horizon = 1)
+
+mean_importance_xgb_h3 = bind_rows(save.importance_xgb_h3) %>% 
+  group_by(`Feature`) %>%
+  summarize(mean_importance = mean(`Gain`, na.rm = TRUE)) %>%
+  rename(var = Feature) %>%
+  left_join(variable_lookup, by = "var") %>%  # Join by variable name
+  group_by(group) %>%                          # Group by the variable group
+  summarize(average_importance = sum(mean_importance)) %>%
+  arrange(desc(average_importance)) %>%
+  mutate(average_importance = average_importance * 100 / sum(average_importance),
+         horizon = 3)
 
 mean_importance_xgb_h6 = bind_rows(save.importance_xgb_h6) %>% 
   group_by(`Feature`) %>%
@@ -663,9 +708,4 @@ ggplot(df_plot_xgb, aes(x = factor(horizon), y = average_importance, fill = grou
   theme(legend.position = "bottom",  # Move legend below plot
         legend.title = element_blank(),  # Remove legend title
         plot.title = element_text(hjust = 0.5, face = "bold"))  # Center and bold title
-
-
-saveRDS(test_result_xgb, file = "data/boosting_xgb_prediction.RDS")
-
-
 
