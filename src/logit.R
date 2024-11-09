@@ -1,6 +1,8 @@
 # Set seed for reproducibility
 set.seed(42)
 
+library(dplyr)
+
 # Load dataset
 data <- readRDS("data/final_cleaned_data_with_bull_bear.RDS")
 data$date <- as.Date(data$DATE)
@@ -13,10 +15,10 @@ data <- data[order(data$date), ]
 n_test <- 150
 n_train <- 438  # for rolling window
 
-# Initialize an empty list to store each row of predictions
-predicted_probs_logit_h1 <- list()
-predicted_probs_logit_h3 <- list()
-predicted_probs_logit_h6 <- list()
+# Initialize lists to store only the final test set predictions
+final_predicted_probs_logit_h1 <- list()
+final_predicted_probs_logit_h3 <- list()
+final_predicted_probs_logit_h6 <- list()
 
 # Rolling Window Loop
 for (start in seq(1, nrow(data) - n_train - n_test + 1)) {
@@ -35,18 +37,21 @@ for (start in seq(1, nrow(data) - n_train - n_test + 1)) {
   pred_h3 <- predict(logit_h3, newdata = test_data, type = "response")
   pred_h6 <- predict(logit_h6, newdata = test_data, type = "response")
   
-  # Store predictions as individual rows in each list
-  for (i in seq_len(nrow(test_data))) {
-    predicted_probs_logit_h1[[length(predicted_probs_logit_h1) + 1]] <- data.frame(date = test_data$date[i], prob = pred_h1[i])
-    predicted_probs_logit_h3[[length(predicted_probs_logit_h3) + 1]] <- data.frame(date = test_data$date[i], prob = pred_h3[i])
-    predicted_probs_logit_h6[[length(predicted_probs_logit_h6) + 1]] <- data.frame(date = test_data$date[i], prob = pred_h6[i])
+  # Store predictions only for the final loop
+  if (start == (nrow(data) - n_train - n_test + 1)) {
+    for (i in seq_len(nrow(test_data))) {
+      final_predicted_probs_logit_h1[[i]] <- data.frame(date = test_data$date[i], prob = pred_h1[i])
+      final_predicted_probs_logit_h3[[i]] <- data.frame(date = test_data$date[i], prob = pred_h3[i])
+      final_predicted_probs_logit_h6[[i]] <- data.frame(date = test_data$date[i], prob = pred_h6[i])
+    }
   }
 }
 
+
 # Combine lists into data frames for each horizon
-predicted_probs_logit_h1_df <- do.call(rbind, predicted_probs_logit_h1)
-predicted_probs_logit_h3_df <- do.call(rbind, predicted_probs_logit_h3)
-predicted_probs_logit_h6_df <- do.call(rbind, predicted_probs_logit_h6)
+predicted_probs_logit_h1_df <- do.call(rbind, final_predicted_probs_logit_h1)
+predicted_probs_logit_h3_df <- do.call(rbind, final_predicted_probs_logit_h3)
+predicted_probs_logit_h6_df <- do.call(rbind, final_predicted_probs_logit_h6)
 
 
 # Join predictions back to the original dataset if desired
