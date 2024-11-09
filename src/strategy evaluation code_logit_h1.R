@@ -115,7 +115,7 @@ ggplot(data, aes(x = date)) +
   geom_line(aes(y = cum_strategy_return_boosting_xgb, color = "Boosting XGB")) +
   geom_line(aes(y = cum_strategy_return_bagging, color = "Bagging")) +
   geom_line(aes(y = cum_strategy_return_random_forest, color = "Random Forest")) +
-  labs(title = "Cumulative Portfolio Returns Using 50% As Threshold", y = "Cumulative Return", x = "Date") +
+  labs(title = "Cumulative Portfolio Returns Using the 50% Rule", y = "Cumulative Return", x = "Date", color = "Model") +
   theme_minimal()
 
 # Use sample average threshold instead of 50%
