@@ -12,16 +12,20 @@ data$DATE <- as.Date(data$DATE)
 # Sort the data by date
 data <- data[order(data$DATE), ]
 
-# remove DATE column
-data = data %>% select(-DATE)
-
 data <- data[-(1:17), ]  # align for missing data due to 17 lags of Y
 data = head(data, -6) # remove last 6 rows due to inaccurate market state
 Y = data$market_state
 
+# get date column for test set
+test_date = tail(data$DATE, 150)
+
+# remove DATE column
+data = data %>% select(-DATE)
+
 ntest = 150
 ncrossv = 100 
 ntrain = nrow(data) - ncrossv - ntest
+
 
 # h=1, X from lag 1-6, Y starts with lag7
 X_h1 = data %>% 
@@ -308,6 +312,7 @@ ggplot(df_plot, aes(x = factor(horizon), y = average_importance, fill = group)) 
 
 
 # save result
+test_result = cbind(test_date, test_result)
 saveRDS(test_result, file = "data/boosting_gbm_prediction.RDS")
 
 
@@ -385,42 +390,103 @@ colnames(test_result_sample_mean) <- c("1-step ahead forecast", "3-step ahead fo
 test_X_h1 = X_h1
 y_test = Y
 test_boost_mean = matrix(0,ntest,1)
+save.importance_samplemean = list()
 for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
   X.window = test_X_h1[(1+ntest-i):(nrow(test_X_h1)-i),] #define the estimation window (first one: 1 to 421, then 2 to 422 etc, till 150 to 570)
   y.window = y_test[(1+ntest-i):(length(y_test)-i)]
   boost = runboost_setn(X.window, y.window, n=737)
   test_boost_mean[(1+ntest-i), 1] = boost$pred # save the forecast
+  save.importance_samplemean[[i]]=boost$importance #save variable importance
   cat("iteration", (1+ntest-i), "\n") # display iteration number
 }
 test_result_sample_mean$`1-step ahead forecast` = test_boost_mean
+
+
+mean_importance_samplemean = bind_rows(save.importance_samplemean) %>%
+  group_by(var) %>%
+  summarize(mean_importance = mean(`rel.inf`, na.rm = TRUE)) %>%
+  left_join(variable_lookup, by = "var") %>%  # Join by variable name
+  group_by(group) %>%                          # Group by the variable group
+  summarize(average_importance = sum(mean_importance)) %>%
+  arrange(desc(average_importance)) %>%
+  mutate(horizon = 1)
+
 
 # h=3: best model -- tree size = bestM_mean_h3 = 671
 test_X_h3 = X_h3
 y_test = Y
 test_boost_mean_h3 = matrix(0,ntest,1)
+save.importance_samplemean_h3 = list()
 for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
   X.window = test_X_h3[(1+ntest-i):(nrow(test_X_h3)-i),] #define the estimation window (first one: 1 to 421, then 2 to 422 etc, till 150 to 570)
   y.window = y_test[(1+ntest-i):(length(y_test)-i)]
   boost = runboost_setn(X.window, y.window, n=671)
   test_boost_mean_h3[(1+ntest-i), 1] = boost$pred # save the forecast
+  save.importance_samplemean_h3[[i]]=boost$importance #save variable importance
   cat("iteration", (1+ntest-i), "\n") # display iteration number
 }
 test_result_sample_mean$`3-step ahead forecast` = test_boost_mean_h3
+
+
+mean_importance_samplemean_h3 = bind_rows(save.importance_samplemean_h3) %>%
+  group_by(var) %>%
+  summarize(mean_importance = mean(`rel.inf`, na.rm = TRUE)) %>%
+  left_join(variable_lookup, by = "var") %>%  # Join by variable name
+  group_by(group) %>%                          # Group by the variable group
+  summarize(average_importance = sum(mean_importance)) %>%
+  arrange(desc(average_importance)) %>%
+  mutate(horizon = 3)
+
 
 # h=6: best model -- tree size = bestM_mean_h6 = 523
 test_X_h6 = X_h6
 y_test = Y
 test_boost_mean_h6 = matrix(0,ntest,1)
+save.importance_samplemean_h6 = list()
 for(i in ntest:1){#NB: backwards FOR loop: going from 150 down to 1
   X.window = test_X_h6[(1+ntest-i):(nrow(test_X_h6)-i),] #define the estimation window (first one: 1 to 421, then 2 to 422 etc, till 150 to 570)
   y.window = y_test[(1+ntest-i):(length(y_test)-i)]
   boost = runboost_setn(X.window, y.window, n=523)
   test_boost_mean_h6[(1+ntest-i), 1] = boost$pred # save the forecast
+  save.importance_samplemean_h6[[i]]=boost$importance #save variable importance
   cat("iteration", (1+ntest-i), "\n") # display iteration number
 }
 test_result_sample_mean$`6-step ahead forecast` = test_boost_mean_h6
 
+
+mean_importance_samplemean_h6 = bind_rows(save.importance_samplemean_h6) %>%
+  group_by(var) %>%
+  summarize(mean_importance = mean(`rel.inf`, na.rm = TRUE)) %>%
+  left_join(variable_lookup, by = "var") %>%  # Join by variable name
+  group_by(group) %>%                          # Group by the variable group
+  summarize(average_importance = sum(mean_importance)) %>%
+  arrange(desc(average_importance)) %>%
+  mutate(horizon = 6)
+
+
+df_plot_samplemean = rbind(mean_importance_samplemean, mean_importance_samplemean_h3, mean_importance_samplemean_h6) %>%
+  group_by(group, horizon)
+
+
 # save result
+saveRDS(df_plot, file = "data/boosting_gbm_importance_samplemean.RDS")
+
+
+ggplot(df_plot_samplemean, aes(x = factor(horizon), y = average_importance, fill = group)) + 
+  geom_bar(stat = "identity", position = "stack") +  # Stack bars by horizon
+  geom_text(aes(label = round(average_importance, 2)), 
+            position = position_stack(vjust = 0.5), size = 3.5) +  # Position text labels at center of each stack
+  labs(title = "GBM Average Feature Importance By Type (sample mean method)", x = "Forecast Horizon", y = "Average Importance") + 
+  scale_fill_brewer(palette = "Set3") +  # Use a color palette for horizons
+  theme_minimal() + 
+  theme(legend.position = "bottom",  # Move legend 3a2below plot
+        legend.title = element_blank(),  # Remove legend title
+        plot.title = element_text(hjust = 0.5, face = "bold"))  # Center and bold title
+
+
+
+# save result
+test_result_sample_mean = cbind(test_date, test_result_sample_mean)
 saveRDS(test_result_sample_mean, file = "data/boosting_gbm_sample_mean_prediction.RDS")
 
 
@@ -665,6 +731,8 @@ ggplot(df_plot_xgb, aes(x = factor(horizon), y = average_importance, fill = grou
         plot.title = element_text(hjust = 0.5, face = "bold"))  # Center and bold title
 
 
+# Save result
+test_result_xgb = cbind(test_date, test_result_xgb)
 saveRDS(test_result_xgb, file = "data/boosting_xgb_prediction.RDS")
 
 
