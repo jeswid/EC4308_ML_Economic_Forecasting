@@ -61,12 +61,64 @@ data$strategy_return_lasso <- ifelse(
   data$ret,          # Invest in stocks: Use the stock return
   data$tbl         # Invest in risk-free asset: Use T-bill rate
 )
+data$strategy_return_boosting_gbm <- ifelse(
+  data$predicted_prob_boosting_h1 > 0.5,  # Threshold of 0.5 for investment in stocks
+  data$ret,          # Invest in stocks: Use the stock return
+  data$tbl         # Invest in risk-free asset: Use T-bill rate
+)
+data$strategy_return_boosting_gbm_sample_mean <- ifelse(
+  data$predicted_prob_boosting_sample_mean_h1 > 0.5,  # Threshold of 0.5 for investment in stocks
+  data$ret,          # Invest in stocks: Use the stock return
+  data$tbl         # Invest in risk-free asset: Use T-bill rate
+)
+data$strategy_return_boosting_xgb <- ifelse(
+  data$predicted_prob_boosting_xgb_h1 > 0.5,  # Threshold of 0.5 for investment in stocks
+  data$ret,          # Invest in stocks: Use the stock return
+  data$tbl         # Invest in risk-free asset: Use T-bill rate
+)
+data$strategy_return_bagging <- ifelse(
+  data$predicted_prob_bagging_h1 > 0.5,  # Threshold of 0.5 for investment in stocks
+  data$ret,          # Invest in stocks: Use the stock return
+  data$tbl         # Invest in risk-free asset: Use T-bill rate
+)
+data$strategy_return_random_forest <- ifelse(
+  data$predicted_prob_random_forest_h1 > 0.5,  # Threshold of 0.5 for investment in stocks
+  data$ret,          # Invest in stocks: Use the stock return
+  data$tbl         # Invest in risk-free asset: Use T-bill rate
+)
 
 # Calculate cumulative returns from the strategy
 data$cum_strategy_return_logit <- cumprod(1 + data$strategy_return_logit) - 1
 data$cum_strategy_return_lasso <- cumprod(1 + data$strategy_return_lasso) - 1
+data$cum_strategy_return_boosting_gbm <- cumprod(1 + data$strategy_return_boosting_gbm) - 1
+data$cum_strategy_return_boosting_gbm_sample_mean <- cumprod(1 + data$strategy_return_boosting_gbm_sample_mean) - 1
+data$cum_strategy_return_boosting_xgb <- cumprod(1 + data$strategy_return_boosting_xgb) - 1
+data$cum_strategy_return_bagging <- cumprod(1 + data$strategy_return_bagging) - 1
+data$cum_strategy_return_random_forest <- cumprod(1 + data$strategy_return_random_forest) - 1
 
-# Optional: Use sample average threshold instead of 50%
+# Print summary statistics of the strategies
+summary(data$cum_strategy_return_logit)
+summary(data$cum_strategy_return_lasso)
+summary(data$cum_strategy_return_boosting_gbm)
+summary(data$cum_strategy_return_boosting_gbm_sample_mean)
+summary(data$cum_strategy_return_boosting_xgb)
+summary(data$cum_strategy_return_bagging)
+summary(data$cum_strategy_return_random_forest)
+
+# Plotting cumulative returns
+library(ggplot2)
+ggplot(data, aes(x = date)) +
+  geom_line(aes(y = cum_strategy_return_logit, color = "Logit")) +
+  geom_line(aes(y = cum_strategy_return_lasso, color = "LASSO Logit")) +
+  #geom_line(aes(y = cum_strategy_return_boosting_gbm, color = "Boosting GBM")) +
+  #geom_line(aes(y = cum_strategy_return_boosting_gbm_sample_mean, color = "Boosting GBM using sample mean")) +
+  geom_line(aes(y = cum_strategy_return_boosting_xgb, color = "Boosting XGB")) +
+  geom_line(aes(y = cum_strategy_return_bagging, color = "Bagging")) +
+  geom_line(aes(y = cum_strategy_return_random_forest, color = "Random Forest")) +
+  labs(title = "Cumulative Portfolio Returns Using 50% As Threshold", y = "Cumulative Return", x = "Date") +
+  theme_minimal()
+
+# Use sample average threshold instead of 50%
 sample_avg_threshold <- mean(data$market_state)  # Calculate sample average of bear markets
 
 data$strategy_return_avg_logit <- ifelse(
@@ -79,10 +131,40 @@ data$strategy_return_avg_lasso <- ifelse(
   data$ret,
   data$tbl
 )
+data$strategy_return_avg_boosting_gbm <- ifelse(
+  data$predicted_prob_boosting_h1 > sample_avg_threshold,
+  data$ret,
+  data$tbl
+)
+data$strategy_return_avg_boosting_sample_mean <- ifelse(
+  data$predicted_prob_boosting_sample_mean_h1 > sample_avg_threshold,
+  data$ret,
+  data$tbl
+)
+data$strategy_return_avg_boosting_xgb <- ifelse(
+  data$predicted_prob_boosting_xgb_h1 > sample_avg_threshold,
+  data$ret,
+  data$tbl
+)
+data$strategy_return_avg_bagging <- ifelse(
+  data$predicted_prob_bagging_h1 > sample_avg_threshold,
+  data$ret,
+  data$tbl
+)
+data$strategy_return_avg_random_forest <- ifelse(
+  data$predicted_prob_random_forest_h1 > sample_avg_threshold,
+  data$ret,
+  data$tbl
+)
 
 # Calculate cumulative returns using sample average threshold strategy
 data$cum_strategy_return_avg_logit <- cumprod(1 + data$strategy_return_avg_logit) - 1
 data$cum_strategy_return_avg_lasso <- cumprod(1 + data$strategy_return_avg_lasso) - 1
+data$cum_strategy_return_avg_boosting_gbm <- cumprod(1 + data$strategy_return_avg_boosting_gbm) - 1
+data$cum_strategy_return_avg_boosting_gbm_sample_mean <- cumprod(1 + data$strategy_return_avg_boosting_sample_mean) - 1
+data$cum_strategy_return_avg_boosting_xgb <- cumprod(1 + data$strategy_return_avg_boosting_xgb) - 1
+data$cum_strategy_return_avg_bagging <- cumprod(1 + data$strategy_return_avg_bagging) - 1
+data$cum_strategy_return_avg_random_forest <- cumprod(1 + data$strategy_return_avg_random_forest) - 1
 
 # Print summary statistics of the strategies
 summary(data$cum_strategy_return_logit)
