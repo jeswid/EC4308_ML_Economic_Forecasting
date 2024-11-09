@@ -8,10 +8,10 @@ data$date <- as.Date(data$DATE)
 # Sort the data by date
 data <- data[order(data$date), ]
 
-# Define sizes for test, validation, and training windows
+# Define sizes for test, and training windows excluding the last 6 observations of the test set
+#but keep the overall size of the test set to 150 (means discard the last 6 obsv of rows)
 n_test <- 150
-n_validation <- 100
-train_window_size <- 344  # for rolling window
+n_train <- 438  # for rolling window
 
 # Initialize an empty list to store each row of predictions
 predicted_probs_logit_h1 <- list()
@@ -19,11 +19,11 @@ predicted_probs_logit_h3 <- list()
 predicted_probs_logit_h6 <- list()
 
 # Rolling Window Loop
-for (start in seq(1, nrow(data) - train_window_size - n_validation - n_test + 1)) {
+for (start in seq(1, nrow(data) - n_train - n_test + 1)) {
   
   # Define rolling window train and test data
-  train_data <- data[start:(start + train_window_size + n_validation - 1 - 6), ]
-  test_data <- data[(start + train_window_size + n_validation - 6):(start + train_window_size + n_validation + n_test - 1 - 6), ]
+  train_data <- data[start:(start + n_train - 1), ]
+  test_data <- data[(start + n_train):(start + n_train + n_test - 1), ]
   
   # Logistic regression models for h1, h3, and h6
   logit_h1 <- glm(market_state ~ lag1_tms + lag1_ret + lag1_infl + lag1_lty, data = train_data, family = binomial(link = "logit"))
