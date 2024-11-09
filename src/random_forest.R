@@ -3,13 +3,15 @@ library(ggplot2)
 library(tibble)
 library(randomForest)
 
+set.seed(42)
+
 data = readRDS("data/final_cleaned_data_with_bull_bear.RDS")
 
 data$DATE <- as.Date(data$DATE)
 # Sort the data by date
 data <- data[order(data$DATE), ]
 #Remove last 6 observations
-#data <- head(data, -6)
+data <- head(data, -6)
 
 
 
