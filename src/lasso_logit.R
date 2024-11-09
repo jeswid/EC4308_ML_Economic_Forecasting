@@ -6,7 +6,7 @@ library(purrr)
 
 rm(list = ls())
 
-data <- readRDS("data/final_cleaned_data_with_bull_bear.RDS")
+data <- readRDS("final_cleaned_data_with_bull_bear.RDS")
 
 # Sort data according to time
 data <- data[order(data$DATE), ]
@@ -31,6 +31,7 @@ date <- data.frame(date = data$DATE)
 date <- date[(nrow(data) - test_size + 1):nrow(data),]
 
 # data for the different h-step ahead forecast
+
 X_h1 = data %>% 
   select(starts_with("lag"), "market_state", "DATE") %>% # remove present values 
   select(-starts_with("lag7_"), -starts_with("lag8_"), -starts_with("lag9_"), -starts_with("lag10_"), -starts_with("lag11_"), ends_with("market_state")) %>% # keep lag 1-6 for X variables, but keep all lags of Y first
@@ -51,7 +52,7 @@ X_h6 = data %>%
             ))
 
 # function to run lasso logit and forecast
-forecast_h_step <- function(i, data, testsize, hstep){
+forecast_h_step <- function(i, data, testsize){
   #Forecast using rolling window
   #Split data according to window
   train_set <- data[i:(nrow(data) - test_size + (i-1)), ]
@@ -62,22 +63,15 @@ forecast_h_step <- function(i, data, testsize, hstep){
   optimal_lambda <- model$lambda
   predictions <- predict(model, newdata = test_set, type = "response", lambda = optimal_lambda)
   
-  return(predictions[hstep])
+  return(predictions[1])
 }
 
-predicted$h1_forecast <- map_dbl(1:150, forecast_h_step, data = X_h1, testsize = test_size, hstep = 1)
-predicted$h3_forecast <- map_dbl(1:150, forecast_h_step, data = X_h3, testsize = test_size, hstep = 3)
-predicted$h6_forecast <- map_dbl(1:150, forecast_h_step, data = X_h6, testsize = test_size, hstep = 6)
+predicted$h1_forecast <- map_dbl(1:150, forecast_h_step, data = X_h1, testsize = test_size)
+predicted$h3_forecast <- map_dbl(1:150, forecast_h_step, data = X_h3, testsize = test_size)
+predicted$h6_forecast <- map_dbl(1:150, forecast_h_step, data = X_h6, testsize = test_size)
 
 # Append date to predicted dataframe
 predicted$Date <- date
-
-# Shift the h-step ahead forecast to match the dates
-predicted <- predicted %>%
-  mutate(h3_forecast = lag(h3_forecast, n = 2))
-
-predicted <- predicted %>%
-  mutate(h6_forecast = lag(h6_forecast, n = 5))
 
 # Save predicted values as RDS file
 saveRDS(predicted, file = "lasso_logit_predictions.rds")
@@ -104,8 +98,8 @@ get_selected_features <- function(i, data, testsize){
 
 # Combine all selected features in each iteration and store it
 feat_df_h1 <- bind_rows(map(1:150, get_selected_features, data = X_h1, testsize = test_size))
-feat_df_h3 <- bind_rows(map(1:148, get_selected_features, data = X_h3, testsize = test_size))
-feat_df_h6 <- bind_rows(map(1:145, get_selected_features, data = X_h6, testsize = test_size))
+feat_df_h3 <- bind_rows(map(1:150, get_selected_features, data = X_h3, testsize = test_size))
+feat_df_h6 <- bind_rows(map(1:150, get_selected_features, data = X_h6, testsize = test_size))
 
 # Count TRUE, group by predictors
 feat_df_h1 <- feat_df_h1 %>%
@@ -127,7 +121,7 @@ feat_df_h6 <- feat_df_h6[feat_df_h6$true_count > mean(feat_df_h6$true_count),]
 
 # Plot feature importance
 h1plot <- feat_df_h1 %>%
-  arrange(true_count) %>%   
+  arrange(true_count) %>%    
   mutate(predictor=factor(predictor, levels=predictor)) %>%  
   ggplot( aes(x=predictor, y=true_count)) +
   geom_segment( aes(xend=predictor, yend=0)) +
@@ -137,8 +131,8 @@ h1plot <- feat_df_h1 %>%
   xlab("")
 
 h3plot <- feat_df_h3 %>%
-  arrange(true_count) %>%  
-  mutate(predictor=factor(predictor, levels=predictor)) %>%  
+  arrange(true_count) %>%    
+  mutate(predictor=factor(predictor, levels=predictor)) %>%
   ggplot( aes(x=predictor, y=true_count)) +
   geom_segment( aes(xend=predictor, yend=0)) +
   geom_point( size=4, color="orange") +
@@ -148,7 +142,7 @@ h3plot <- feat_df_h3 %>%
 
 h6plot <- feat_df_h6 %>%
   arrange(true_count) %>%    
-  mutate(predictor=factor(predictor, levels=predictor)) %>% 
+  mutate(predictor=factor(predictor, levels=predictor)) %>%   
   ggplot( aes(x=predictor, y=true_count)) +
   geom_segment( aes(xend=predictor, yend=0)) +
   geom_point( size=4, color="orange") +
