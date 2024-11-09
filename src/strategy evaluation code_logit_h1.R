@@ -2,7 +2,8 @@
 # Assuming 'data' contains 'predicted_prob_logit_h1' (forecasted probability of bear market)
 # and 'market_state' (actual market state: 0 = Bear, 1 = Bull)
 
-results <- readRDS("data/logit_predictions.rds") %>%
+# load predictions from all models
+results_logit <- readRDS("data/logit_predictions.rds") %>%
   filter(!is.na(predicted_prob_logit_h1))
 
 results_lasso <- readRDS("data/lasso_logit_predictions.rds") %>%
@@ -29,12 +30,25 @@ results_boosting_xgb <- readRDS("data/boosting_xgb_prediction.RDS") %>%
          predicted_prob_boosting_xgb_h6 = `6-step ahead forecast`) %>%
   filter(!is.na(predicted_prob_boosting_xgb_h1))
 
-#results_bagging_h1 <- data %>%
-#  filter(!is.na(predicted_prob_logit_h1))
+results_bagging <- readRDS("data/bagging_prediction.RDS") %>%
+  rename(predicted_prob_bagging_h1 = `1-step ahead predicted probability`, 
+         predicted_prob_bagging_h3 = `3-step ahead predicted probability`,
+         predicted_prob_bagging_h6 = `6-step ahead predicted probability`) %>%
+  filter(!is.na(predicted_prob_bagging_h1))
 
-data = results %>%
+results_random_forest <- readRDS("data/randomforest_prediction.RDS") %>%
+  rename(predicted_prob_random_forest_h1 = `1-step ahead predicted probability`, 
+         predicted_prob_random_forest_h3 = `3-step ahead predicted probability`,
+         predicted_prob_random_forest_h6 = `6-step ahead predicted probability`) %>%
+  filter(!is.na(predicted_prob_random_forest_h1))
+
+data = results_logit %>%
   left_join(results_lasso, by = c("date" = "Date")) %>%
-  left_join(results_boosting_gbm, by = c("date" = "test_date"))
+  left_join(results_boosting_gbm, by = c("date" = "test_date")) %>%
+  left_join(results_boosting_gbm_sample_mean, by = c("date" = "test_date")) %>%
+  left_join(results_boosting_xgb, by = c("date" = "test_date")) %>%
+  left_join(results_bagging, by = c("date" = "DATE")) %>%
+  left_join(results_random_forest, by = c("date" = "DATE"))
 
 # Define portfolio strategy based on forecast probabilities
 data$strategy_return_logit <- ifelse(
