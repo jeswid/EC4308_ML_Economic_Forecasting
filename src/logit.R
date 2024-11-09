@@ -24,8 +24,8 @@ final_predicted_probs_logit_h6 <- list()
 for (start in seq(1, nrow(data) - n_train - n_test + 1)) {
   
   # Define rolling window train and test data
-  train_data <- data[start:(start + n_train - 1), ]
-  test_data <- data[(start + n_train):(start + n_train + n_test - 1), ]
+  train_data <- data[start:(start + n_train - 1 - 6), ]
+  test_data <- data[(start + n_train - 6):(start + n_train + n_test - 1 - 6), ]
   
   # Logistic regression models for h1, h3, and h6
   logit_h1 <- glm(market_state ~ lag1_tms + lag1_ret + lag1_infl + lag1_lty, data = train_data, family = binomial(link = "logit"))
