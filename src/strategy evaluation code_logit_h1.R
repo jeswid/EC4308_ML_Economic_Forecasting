@@ -8,17 +8,33 @@ results <- readRDS("data/logit_predictions.rds") %>%
 results_lasso <- readRDS("data/lasso_logit_predictions.rds") %>%
   rename(predicted_prob_lasso_h1 = h1_forecast, 
          predicted_prob_lasso_h3 = h3_forecast,
-         predicted_prob_lasso_h6 = h6_forecast,) %>%
+         predicted_prob_lasso_h6 = h6_forecast) %>%
   filter(!is.na(predicted_prob_lasso_h1))
 
-#results_boosting_h1 <- data %>%
-#  filter(!is.na(predicted_prob_logit_h1))
+results_boosting_gbm <- readRDS("data/boosting_gbm_prediction.RDS") %>%
+  rename(predicted_prob_boosting_h1 = `1-step ahead forecast`, 
+         predicted_prob_boosting_h3 = `3-step ahead forecast`,
+         predicted_prob_boosting_h6 = `6-step ahead forecast`) %>%
+  filter(!is.na(predicted_prob_boosting_h1))
+
+results_boosting_gbm_sample_mean <- readRDS("data/boosting_gbm_sample_mean_prediction.RDS") %>%
+  rename(predicted_prob_boosting_sample_mean_h1 = `1-step ahead forecast`, 
+         predicted_prob_boosting_sample_mean_h3 = `3-step ahead forecast`,
+         predicted_prob_boosting_sample_mean_h6 = `6-step ahead forecast`) %>%
+  filter(!is.na(predicted_prob_boosting_sample_mean_h1))
+
+results_boosting_xgb <- readRDS("data/boosting_xgb_prediction.RDS") %>%
+  rename(predicted_prob_boosting_xgb_h1 = `1-step ahead forecast`, 
+         predicted_prob_boosting_xgb_h3 = `3-step ahead forecast`,
+         predicted_prob_boosting_xgb_h6 = `6-step ahead forecast`) %>%
+  filter(!is.na(predicted_prob_boosting_xgb_h1))
 
 #results_bagging_h1 <- data %>%
 #  filter(!is.na(predicted_prob_logit_h1))
 
 data = results %>%
-  left_join(results_lasso, by = c("date" = "Date"))
+  left_join(results_lasso, by = c("date" = "Date")) %>%
+  left_join(results)
 
 # Define portfolio strategy based on forecast probabilities
 data$strategy_return_logit <- ifelse(

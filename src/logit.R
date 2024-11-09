@@ -13,13 +13,13 @@ n_test <- 150
 n_validation <- 100
 train_window_size <- 344  # for rolling window
 
-# Initialize empty lists to store predictions for each model
+# Initialize an empty list to store each row of predictions
 predicted_probs_logit_h1 <- list()
 predicted_probs_logit_h3 <- list()
 predicted_probs_logit_h6 <- list()
 
 # Rolling Window Loop
-for (start in seq(1, nrow(data), by = 10)) {
+for (start in seq(1, nrow(data) - train_window_size - n_validation - n_test + 1)) {
   
   # Define rolling window train and test data
   train_data <- data[start:(start + train_window_size + n_validation - 1 - 6), ]
@@ -30,20 +30,24 @@ for (start in seq(1, nrow(data), by = 10)) {
   logit_h3 <- glm(market_state ~ lag3_tms + lag3_ret + lag3_infl + lag3_lty, data = train_data, family = binomial(link = "logit"))
   logit_h6 <- glm(market_state ~ lag6_tms + lag6_ret + lag6_infl + lag6_lty, data = train_data, family = binomial(link = "logit"))
   
-  # Make predictions for each horizon and store
+  # Make predictions for each horizon
   pred_h1 <- predict(logit_h1, newdata = test_data, type = "response")
   pred_h3 <- predict(logit_h3, newdata = test_data, type = "response")
   pred_h6 <- predict(logit_h6, newdata = test_data, type = "response")
   
-  predicted_probs_logit_h1[[length(predicted_probs_logit_h1) + 1]] <- data.frame(date = test_data$date, prob = pred_h1)
-  predicted_probs_logit_h3[[length(predicted_probs_logit_h3) + 1]] <- data.frame(date = test_data$date, prob = pred_h3)
-  predicted_probs_logit_h6[[length(predicted_probs_logit_h6) + 1]] <- data.frame(date = test_data$date, prob = pred_h6)
+  # Store predictions as individual rows in each list
+  for (i in seq_len(nrow(test_data))) {
+    predicted_probs_logit_h1[[length(predicted_probs_logit_h1) + 1]] <- data.frame(date = test_data$date[i], prob = pred_h1[i])
+    predicted_probs_logit_h3[[length(predicted_probs_logit_h3) + 1]] <- data.frame(date = test_data$date[i], prob = pred_h3[i])
+    predicted_probs_logit_h6[[length(predicted_probs_logit_h6) + 1]] <- data.frame(date = test_data$date[i], prob = pred_h6[i])
+  }
 }
 
-# Combine predictions into data frames for each horizon
+# Combine lists into data frames for each horizon
 predicted_probs_logit_h1_df <- do.call(rbind, predicted_probs_logit_h1)
 predicted_probs_logit_h3_df <- do.call(rbind, predicted_probs_logit_h3)
 predicted_probs_logit_h6_df <- do.call(rbind, predicted_probs_logit_h6)
+
 
 # Join predictions back to the original dataset if desired
 data <- data %>%
