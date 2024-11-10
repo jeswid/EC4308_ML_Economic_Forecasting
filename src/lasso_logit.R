@@ -114,43 +114,60 @@ feat_df_h6 <- feat_df_h6 %>%
   group_by(predictor) %>%
   summarise(true_count = sum(index == TRUE))
 
-#Filter for features greater than mean
-feat_df_h1 <- feat_df_h1[feat_df_h1$true_count > mean(feat_df_h1$true_count),]
-feat_df_h3 <- feat_df_h3[feat_df_h3$true_count > mean(feat_df_h3$true_count),]
-feat_df_h6 <- feat_df_h6[feat_df_h6$true_count > mean(feat_df_h6$true_count),]
+feat_df_h1 <- feat_df_h1 %>% mutate(horizon = "h = 1")
+feat_df_h3 <- feat_df_h3 %>% mutate(horizon = "h = 3")
+feat_df_h6 <- feat_df_h6 %>% mutate(horizon = "h = 6")
 
-# Plot feature importance
-h1plot <- feat_df_h1 %>%
-  arrange(true_count) %>%    
-  mutate(predictor=factor(predictor, levels=predictor)) %>%  
-  ggplot( aes(x=predictor, y=true_count)) +
-  geom_segment( aes(xend=predictor, yend=0)) +
-  geom_point( size=4, color="orange") +
-  coord_flip() +
-  theme_bw() +
-  xlab("")
+feature_importance <- bind_rows(feat_df_h1, feat_df_h3, feat_df_h6)
 
-h3plot <- feat_df_h3 %>%
-  arrange(true_count) %>%    
-  mutate(predictor=factor(predictor, levels=predictor)) %>%
-  ggplot( aes(x=predictor, y=true_count)) +
-  geom_segment( aes(xend=predictor, yend=0)) +
-  geom_point( size=4, color="orange") +
-  coord_flip() +
-  theme_bw() +
-  xlab("")
+# groups for feature importance plot
+price_div_earn = grep("(ret(x)?|ratio|yield|payout|book_market|fbm|price|dividend|earnings|rate_gs10|TR_CAPE)$", colnames(data), value = TRUE) # ret, retx, dividend_price_ratio, dividend_yield, earnings_price_ratio, dividend_payout, book_market, fbm, price, dividend, earnings, rate_gs10, TR_CAPE
+return_yield = grep("(AA|lty|ltr|corpr|tbl|Rfree|tms|dfy|dfr|ygap|returns)$", colnames(data), value = TRUE) # AAA, BAA, lty, ltr, corpr, Rfree, term_spread, dfy, dfr, ygap, monthly_total_bond_returns
+econ_indicator = grep("(infl|ntis|ogap|wtexas|CPI|UNRATE|DFF|INDPRO)$", colnames(data), value = TRUE) # infl, ntis, ogap, wtexas, CPI, UNRATE, DFF, INDPRO
+risk_measure = grep("(svar|skvw|tail|shtint|lzrt|rdsp)$", colnames(data), value = TRUE) # svar, skvw, tail, shtint, lzrt, rdsp
+investment_finratio = grep("(sntm|ndrbl)$", colnames(data), value = TRUE) # sntm, ndrbl
+technical_indicator = grep("(dtoy|dtoat|tchi|avgcor)$", colnames(data), value = TRUE) # dtoy, dtoat, tchi, avgcor
+lag_market_state = grep("market_state$", colnames(data), value = TRUE)
 
-h6plot <- feat_df_h6 %>%
-  arrange(true_count) %>%    
-  mutate(predictor=factor(predictor, levels=predictor)) %>%   
-  ggplot( aes(x=predictor, y=true_count)) +
-  geom_segment( aes(xend=predictor, yend=0)) +
-  geom_point( size=4, color="orange") +
-  coord_flip() +
-  theme_bw() +
-  xlab("")
+# Define the variable groups as a named list
+variable_groups <- list(
+  "Price, Dividends, and Earnings" = price_div_earn,
+  "Returns and Yields" = return_yield,
+  "Economic Indicators" = econ_indicator,
+  "Risk Measures" = risk_measure,
+  "Investment and Financial Ratios" = investment_finratio,
+  "Market Sentiment and Technical Indicators" = technical_indicator,
+  "Lag Market State" = lag_market_state
+)
 
-# show plot
-print(h1plot)
-print(h3plot)
-print(h6plot)
+# Convert the list into a lookup table to match variables with their group
+variable_lookup <- stack(variable_groups) %>%
+  rename(var = values, group = ind)
+
+feature_importance_grouped <- feature_importance %>%
+  left_join(variable_lookup, by = c("predictor" = "var"))
+
+# Calculate the relative importance in each group and get the distinct values
+feature_importance_summary <- feature_importance_grouped %>%
+  group_by(horizon,group) %>%
+  mutate(tcount = sum(true_count)) %>%
+  ungroup() %>%
+  
+  group_by(horizon) %>%
+  mutate(norm_count = 100 * tcount/sum(true_count)) %>%
+  ungroup() %>%
+  
+  distinct(horizon, group, norm_count)
+
+p<-ggplot(feature_importance_summary, aes(x = factor(horizon), y = norm_count, fill = group)) +
+  geom_bar(stat = "identity", position = "stack") +  # Stack bars by horizon
+  geom_text(aes(label = round(norm_count, 2)),
+            position = position_stack(vjust = 0.5), size = 3.5) +  # Position text labels at center of each stack
+  labs(title = "LASSO Logit Feature Importance By Type", x = "Forecast Horizon", y = "Relative Importance") +
+  scale_fill_brewer(palette = "Set3") +  # Use a color palette for horizons
+  theme_minimal() +
+  theme(legend.position = "bottom",  # Move legend below plot
+        legend.title = element_blank(),  # Remove legend title
+        plot.title = element_text(hjust = 0.5, face = "bold"))  # Center and bold title
+
+print(p)
