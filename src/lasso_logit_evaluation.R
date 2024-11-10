@@ -19,7 +19,9 @@ eval_model <- function(n) {
   data$cum_strategy_return <- cumprod(1 + data$strategy_return) - 1
   
   # Optional: Use sample average threshold instead of 50%
-  sample_avg_threshold <- mean(data$market_state)  # Calculate sample average of bear markets
+  data_full = readRDS("data/final_cleaned_data_with_bull_bear.rds")
+  data_train = data_full[17:438,]
+  sample_avg_threshold <- mean(data_train$market_state)
   
   data$strategy_return_avg <- ifelse(
     data[n] > sample_avg_threshold,
