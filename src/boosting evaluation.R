@@ -37,4 +37,3 @@ for (i in 2:4) {
   f1_score =  2 * (as.numeric(conf_matrix$byClass['Precision']) * as.numeric(conf_matrix$byClass['Recall'])) / (as.numeric(conf_matrix$byClass['Precision']) + as.numeric(conf_matrix$byClass['Recall']))
   print(f1_score)
 }
-

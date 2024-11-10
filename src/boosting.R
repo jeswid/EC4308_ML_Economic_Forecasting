@@ -53,6 +53,7 @@ X_h6 = data %>%
 
 ######################################################################################################################################
 
+# using gbm package
 runboost = function(X, y) {
   X_temp = as.data.frame(X)
   X.out=tail(X_temp,1)
@@ -69,10 +70,11 @@ runboost2 = function(X, y) {
   data = cbind(as.data.frame(y), as.data.frame(X_temp))
   temp.boost = gbm(formula = data$y ~ ., data = data, distribution="bernoulli",
                    interaction.depth = 2,n.trees = M,shrinkage = .01) #fit model for d=2
-  temp.fit = predict(temp.boost, as.data.frame(X.out), n.trees = seq(1, M, 1), type = "response") #prediction for d=5
+  temp.fit = predict(temp.boost, as.data.frame(X.out), n.trees = seq(1, M, 1), type = "response") #prediction for d=2
   return(list("model"=temp.boost,"pred"=temp.fit))
 }
 
+# using xgb package
 runboost_xgb = function(X, y) {
   X_temp = as.matrix(X)
   X.out=as.matrix(tail(X_temp,1))
@@ -98,9 +100,10 @@ runboost2_xgb = function(X, y) {
   }
   return(list("model"=temp.boost,"pred"=pred_matrix))
 }
+å
 ######################################################################################################################################
 
-
+# Cross Validation
 M = 3000 # Max number of trees considered
 boost.rolling.window=function(X,y,d,threshold) {
   X_CV = head(X, ntrain+ncrossv)   # remove test set
@@ -125,6 +128,7 @@ boost.rolling.window=function(X,y,d,threshold) {
   return(list("bestM" = bestM, "cv_min" = cv_min))
 }
 
+# GBM with threshold of 0.5
 h1_cv_gbm = boost.rolling.window(X_h1, Y, 5, 0.5)  # bestM = 351, cv_min = 0.14 -- only case where depth=2 has a lower misclassification rate than depth=5, but depth=5 is still chosen to be run on test set for easier comparisons
 h1_cv_gbm2 = boost.rolling.window(X_h1, Y, 2, 0.5)  # bestM = 1137, cv_min = 0.13
 h3_cv_gbm = boost.rolling.window(X_h3, Y, 5, 0.5)  # bestM = 621, cv_min = 0.14
@@ -132,7 +136,7 @@ h3_cv_gbm2 = boost.rolling.window(X_h3, Y, 2, 0.5)  # bestM = 1415, cv_min = 0.1
 h6_cv_gbm = boost.rolling.window(X_h6, Y, 5, 0.5)  # bestM = 465, cv_min = 0.14
 h6_cv_gbm2 = boost.rolling.window(X_h6, Y, 2, 0.5)  # bestM = 1345, cv_min = 0.14
 
-
+# GBM using sample mean as threshold
 y_train = head(Y, ntrain)
 y_sample_mean = mean(y_train)
 
@@ -164,6 +168,7 @@ boostxgb.rolling.window=function(X,y,d,threshold) {
   return(list("bestM" = bestM_xgb, "cv_min" = cv_min_xgb))
 }
 
+# xgb using threshold of 0.5
 h1_cv_xgb = boostxgb.rolling.window(X_h1, Y, 5, 0.5) # bestM = 40, cv_min = 0.14
 h1_cv_xgb2 = boostxgb.rolling.window(X_h1, Y, 2, 0.5) # bestM = 886, cv_min = 0.14
 h3_cv_xgb= boostxgb.rolling.window(X_h3, Y, 5, 0.5) # bestM = 174, cv_min = 0.13
@@ -172,8 +177,9 @@ h6_cv_xgb = boostxgb.rolling.window(X_h6, Y, 5, 0.5) # bestM = 65, cv_min = 0.14
 h6_cv_xgb2 = boostxgb.rolling.window(X_h6, Y, 2, 0.5) # bestM = 1034, cv_min = 0.14
 
 
+######################################################################################################################################
 
-# test
+# Test
 set.seed(123)
 runboost_setn = function(X, y, n) { # n is the tree size
   X_temp = as.data.frame(X)
@@ -217,7 +223,7 @@ boost_test.rolling.window = function(X, y, n, package) {
   return(list("pred"=test_boost, "save.importance"=save.importance))
 }
 
-
+# Test -- GBM with threshold of 0.5
 test_result <- data.frame(matrix(NA, nrow = 150, ncol = 3))
 colnames(test_result) <- c("1-step ahead forecast", "3-step ahead forecast", "6-step ahead forecast")
 
@@ -233,7 +239,7 @@ test_result = cbind(test_date, test_result)
 saveRDS(test_result, file = "data/boosting_gbm_prediction.RDS")
 
 
-# test -- for sample mean method
+# Test -- GBM with sample mean as threshold
 test_result_sample_mean <- data.frame(matrix(NA, nrow = 150, ncol = 3))
 colnames(test_result_sample_mean) <- c("1-step ahead forecast", "3-step ahead forecast", "6-step ahead forecast")
 
@@ -249,7 +255,7 @@ test_result_sample_mean = cbind(test_date, test_result_sample_mean)
 saveRDS(test_result_sample_mean, file = "data/boosting_gbm_sample_mean_prediction.RDS")
 
 
-# test -- for xgb 
+# Test -- xgb with threshold of 0.5 
 test_result_xgb <- data.frame(matrix(NA, nrow = 150, ncol = 3))
 colnames(test_result_xgb) <- c("1-step ahead forecast", "3-step ahead forecast", "6-step ahead forecast")
 
@@ -266,7 +272,7 @@ test_result_xgb = cbind(test_date, test_result_xgb)
 saveRDS(test_result_xgb, file = "data/boosting_xgb_prediction.RDS")
 
 
-
+# Prepare for feature importance plot
 # groups for feature importance plot
 price_div_earn = grep("(ret(x)?|ratio|yield|payout|book_market|fbm|price|dividend|earnings|rate_gs10|TR_CAPE)$", colnames(data), value = TRUE) # ret, retx, dividend_price_ratio, dividend_yield, earnings_price_ratio, dividend_payout, book_market, fbm, price, dividend, earnings, rate_gs10, TR_CAPE
 return_yield = grep("(AA|lty|ltr|corpr|tbl|Rfree|tms|dfy|dfr|returns)$", colnames(data), value = TRUE) # AAA, BAA, lty, ltr, corpr, Rfree, term_spread, dfy, dfr, monthly_total_bond_returns
@@ -289,6 +295,7 @@ variable_groups <- list(
 variable_lookup <- stack(variable_groups) %>%
   rename(var = values, group = ind)
 
+
 mean_importance = bind_rows(h1_test_gbm$save.importance) %>%
   group_by(var) %>%
   summarize(mean_importance = mean(`rel.inf`, na.rm = TRUE)) %>%
@@ -298,7 +305,6 @@ mean_importance = bind_rows(h1_test_gbm$save.importance) %>%
   arrange(desc(average_importance)) %>%
   mutate(horizon = 1)
 
-
 mean_importance_h3 = bind_rows(h3_test_gbm$save.importance) %>%
   group_by(var) %>%
   summarize(mean_importance = mean(`rel.inf`, na.rm = TRUE)) %>%
@@ -307,7 +313,6 @@ mean_importance_h3 = bind_rows(h3_test_gbm$save.importance) %>%
   summarize(average_importance = sum(mean_importance)) %>%
   arrange(desc(average_importance)) %>%
   mutate(horizon = 3)
-
 
 mean_importance_h6 = bind_rows(h6_test_gbm$save.importance) %>%
   group_by(var) %>%
@@ -341,7 +346,6 @@ ggplot(df_plot, aes(x = factor(horizon), y = average_importance, fill = group)) 
 
 
 ##################################################################################################################################
-
 
 mean_importance_samplemean = bind_rows(h1_test_gbm_mean$save.importance) %>%
   group_by(var) %>%
@@ -392,7 +396,6 @@ ggplot(df_plot_samplemean, aes(x = factor(horizon), y = average_importance, fill
 
 
 ##################################################################################################################################
-
 
 mean_importance_xgb = bind_rows(h1_test_xgb$save.importance) %>% 
   group_by(`Feature`) %>%
