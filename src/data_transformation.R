@@ -7,6 +7,7 @@ library(tseries)  # for ADF test
 # load dataset
 df = readRDS("data/complete_data_df.RDS")
 
+df$original_price = df$price
 # data transformation for ratio variables
 # dividend price ratio
 adf.test(df$dividend_price_ratio, alternative = "stationary") # non-stationary
