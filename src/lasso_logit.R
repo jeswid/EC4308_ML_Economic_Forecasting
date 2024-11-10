@@ -120,25 +120,22 @@ feat_df_h6 <- feat_df_h6 %>% mutate(horizon = "h = 6")
 
 feature_importance <- bind_rows(feat_df_h1, feat_df_h3, feat_df_h6)
 
-# groups for feature importance plot
-price_div_earn = grep("(ret(x)?|ratio|yield|payout|book_market|fbm|price|dividend|earnings|rate_gs10|TR_CAPE)$", colnames(data), value = TRUE) # ret, retx, dividend_price_ratio, dividend_yield, earnings_price_ratio, dividend_payout, book_market, fbm, price, dividend, earnings, rate_gs10, TR_CAPE
-return_yield = grep("(AA|lty|ltr|corpr|tbl|Rfree|tms|dfy|dfr|ygap|returns)$", colnames(data), value = TRUE) # AAA, BAA, lty, ltr, corpr, Rfree, term_spread, dfy, dfr, ygap, monthly_total_bond_returns
-econ_indicator = grep("(infl|ntis|ogap|wtexas|CPI|UNRATE|DFF|INDPRO)$", colnames(data), value = TRUE) # infl, ntis, ogap, wtexas, CPI, UNRATE, DFF, INDPRO
-risk_measure = grep("(svar|skvw|tail|shtint|lzrt|rdsp)$", colnames(data), value = TRUE) # svar, skvw, tail, shtint, lzrt, rdsp
-investment_finratio = grep("(sntm|ndrbl)$", colnames(data), value = TRUE) # sntm, ndrbl
-technical_indicator = grep("(dtoy|dtoat|tchi|avgcor)$", colnames(data), value = TRUE) # dtoy, dtoat, tchi, avgcor
-lag_market_state = grep("market_state$", colnames(data), value = TRUE)
+# groups for feature importance plot 
+price_div_earn = grep("(ret(x)?|ratio|yield|payout|book_market|fbm|price|dividend|earnings|rate_gs10|TR_CAPE)$", colnames(data), value = TRUE) # ret, retx, dividend_price_ratio, dividend_yield, earnings_price_ratio, dividend_payout, book_market, fbm, price, dividend, earnings, rate_gs10, TR_CAPE 
+return_yield = grep("(AA|lty|ltr|corpr|tbl|Rfree|tms|dfy|dfr|returns)$", colnames(data), value = TRUE) # AAA, BAA, lty, ltr, corpr, Rfree, term_spread, dfy, dfr, monthly_total_bond_returns 
+econ_indicator = grep("(infl|ntis|ogap|wtexas|CPI|UNRATE|DFF|INDPRO|ndrbl)$", colnames(data), value = TRUE) # infl, ntis, ogap, wtexas, CPI, UNRATE, DFF, INDPRO, ndrbl 
+risk_measure = grep("(svar|skvw|tail|lzrt|rdsp)$", colnames(data), value = TRUE) # svar, skvw, tail, lzrt, rdsp 
+technical_indicator = grep("(dtoy|dtoat|tchi|avgcor|sntm|ygap|shtint)$", colnames(data), value = TRUE) # dtoy, dtoat, tchi, avgcor, sntm, ygap, shtint 
+lag_market_state = grep("market_state$", colnames(data), value = TRUE)  
 
-# Define the variable groups as a named list
+# Define the variable groups as a named list 
 variable_groups <- list(
-  "Price, Dividends, and Earnings" = price_div_earn,
-  "Returns and Yields" = return_yield,
-  "Economic Indicators" = econ_indicator,
-  "Risk Measures" = risk_measure,
-  "Investment and Financial Ratios" = investment_finratio,
-  "Market Sentiment and Technical Indicators" = technical_indicator,
-  "Lag Market State" = lag_market_state
-)
+  "Price, Dividends, and Earnings" = price_div_earn,   
+  "Returns and Yields" = return_yield,   
+  "Economic Indicators" = econ_indicator,   
+  "Risk Measures" = risk_measure,   
+  "Market Sentiment and Technical Indicators" = technical_indicator,   
+  "Lag Market State" = lag_market_state )
 
 # Convert the list into a lookup table to match variables with their group
 variable_lookup <- stack(variable_groups) %>%
