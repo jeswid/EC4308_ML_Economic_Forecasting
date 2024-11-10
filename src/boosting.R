@@ -221,11 +221,11 @@ boost_test.rolling.window = function(X, y, n, package) {
 test_result <- data.frame(matrix(NA, nrow = 150, ncol = 3))
 colnames(test_result) <- c("1-step ahead forecast", "3-step ahead forecast", "6-step ahead forecast")
 
-h1_test_gbm = boost_test.rolling.window(X_h1, Y, h1_cv_gbm$bestM, "gbm")
+h1_test_gbm = boost_test.rolling.window(X_h1, Y, h1_cv_gbm$bestM, "gbm") #bestM=351
 test_result$`1-step ahead forecast` = h1_test_gbm$pred
-h3_test_gbm = boost_test.rolling.window(X_h3, Y, h3_cv_gbm$bestM, "gbm")
+h3_test_gbm = boost_test.rolling.window(X_h3, Y, h3_cv_gbm$bestM, "gbm") #bestM=621
 test_result$`3-step ahead forecast` = h3_test_gbm$pred
-h6_test_gbm = boost_test.rolling.window(X_h6, Y, h6_cv_gbm$bestM, "gbm")
+h6_test_gbm = boost_test.rolling.window(X_h6, Y, h6_cv_gbm$bestM, "gbm") #bestM=465
 test_result$`6-step ahead forecast` = h6_test_gbm$pred
 
 # save result
@@ -237,11 +237,11 @@ saveRDS(test_result, file = "data/boosting_gbm_prediction.RDS")
 test_result_sample_mean <- data.frame(matrix(NA, nrow = 150, ncol = 3))
 colnames(test_result_sample_mean) <- c("1-step ahead forecast", "3-step ahead forecast", "6-step ahead forecast")
 
-h1_test_gbm_mean = boost_test.rolling.window(X_h1, Y, h1_cv_gbm_mean$bestM, "gbm")
+h1_test_gbm_mean = boost_test.rolling.window(X_h1, Y, h1_cv_gbm_mean$bestM, "gbm") # bestM = 696
 test_result_sample_mean$`1-step ahead forecast` = h1_test_gbm_mean$pred
-h3_test_gbm_mean = boost_test.rolling.window(X_h3, Y, h3_cv_gbm_mean$bestM, "gbm")
+h3_test_gbm_mean = boost_test.rolling.window(X_h3, Y, h3_cv_gbm_mean$bestM, "gbm") # bestM = 729
 test_result_sample_mean$`3-step ahead forecast` = h3_test_gbm_mean$pred
-h6_test_gbm_mean = boost_test.rolling.window(X_h6, Y, h6_cv_gbm_mean$bestM, "gbm")
+h6_test_gbm_mean = boost_test.rolling.window(X_h6, Y, h6_cv_gbm_mean$bestM, "gbm") # bestM = 578
 test_result_sample_mean$`6-step ahead forecast` = h6_test_gbm_mean$pred
 
 # save result
@@ -254,11 +254,11 @@ test_result_xgb <- data.frame(matrix(NA, nrow = 150, ncol = 3))
 colnames(test_result_xgb) <- c("1-step ahead forecast", "3-step ahead forecast", "6-step ahead forecast")
 
 
-h1_test_xgb = boost_test.rolling.window(X_h1, Y, h1_cv_xgb$bestM, "xgb")
+h1_test_xgb = boost_test.rolling.window(X_h1, Y, h1_cv_xgb$bestM, "xgb") # bestM = 40
 test_result_xgb$`1-step ahead forecast` = h1_test_xgb$pred
-h3_test_xgb = boost_test.rolling.window(X_h3, Y, h3_cv_xgb$bestM, "xgb")
+h3_test_xgb = boost_test.rolling.window(X_h3, Y, h3_cv_xgb$bestM, "xgb") # bestM = 174
 test_result_xgb$`3-step ahead forecast` = h3_test_xgb$pred
-h6_test_xgb = boost_test.rolling.window(X_h6, Y, h6_cv_xgb$bestM, "xgb")
+h6_test_xgb = boost_test.rolling.window(X_h6, Y, h6_cv_xgb$bestM, "xgb") # bestM = 65
 test_result_xgb$`6-step ahead forecast` = h6_test_xgb$pred
 
 # Save result
@@ -327,7 +327,7 @@ df_plot = rbind(mean_importance, mean_importance_h3, mean_importance_h6) %>%
 saveRDS(df_plot, file = "data/boosting_gbm_importance.RDS")
 
 
-df_plot = readRDS("data/boosting_gbm_importance.RDS")
+# df_plot = readRDS("data/boosting_gbm_importance.RDS")
 ggplot(df_plot, aes(x = factor(horizon), y = average_importance, fill = group)) + 
   geom_bar(stat = "identity", position = "stack") +  # Stack bars by horizon
   geom_text(aes(label = round(average_importance, 2)), 
