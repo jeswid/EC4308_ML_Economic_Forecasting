@@ -17,6 +17,10 @@ df = df %>% select(-starts_with("real")) %>% # remove real prices
   select(-c(CAPE, excess_CAPE_yield)) %>%
   select(-c(ten_year_annualized_stock_real_return, ten_year_annualized_bonds_real_return))
 
+# assuming 'price' column contains the price data
+prices <- df$original_price # before first differencing
+df = df %>% select(-original_price)
+
 # our prediction horizon is t = 1, 3, 6 months
 h1 <- 1
 h2 <- 3
@@ -34,9 +38,6 @@ df <- df %>%
                       lag7 = ~dplyr::lag(., 7), lag8 = ~dplyr::lag(., 8), lag9 = ~dplyr::lag(., 9),
                      lag10 = ~dplyr::lag(., 10), lag11 = ~dplyr::lag(., 11)),
                 .names = "{fn}_{col}"))
-
-# assuming 'price' column contains the price data
-prices <- df$price
 
 # convert dates if necessary
 dates <- as.Date(df$DATE)
