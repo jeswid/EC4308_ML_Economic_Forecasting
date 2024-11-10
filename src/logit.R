@@ -11,7 +11,7 @@ data$date <- as.Date(data$DATE)
 data <- data[order(data$date), ]
 
 # Remove initial rows and last 6 rows for each horizon dataset
-data <- data[7:(nrow(data) - 6), ]  # h6 prediction uses lag6, so start from row 7
+data <- data[18:(nrow(data) - 6), ]  #standardise train set w ml model train test split (cut first 17 rows)
 
 # Define the test set size and calculate training set size based on available data
 n_test <- 150
