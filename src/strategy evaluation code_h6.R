@@ -110,9 +110,9 @@ library(ggplot2)
 ggplot(data, aes(x = date)) +
   geom_line(aes(y = cum_strategy_return_logit, color = "Logit")) +
   geom_line(aes(y = cum_strategy_return_lasso, color = "LASSO Logit")) +
-  #geom_line(aes(y = cum_strategy_return_boosting_gbm, color = "Boosting GBM")) +
+  geom_line(aes(y = cum_strategy_return_boosting_gbm, color = "Boosting GBM")) +
   #geom_line(aes(y = cum_strategy_return_boosting_gbm_sample_mean, color = "Boosting GBM using sample mean")) +
-  geom_line(aes(y = cum_strategy_return_boosting_xgb, color = "Boosting XGB")) +
+  #geom_line(aes(y = cum_strategy_return_boosting_xgb, color = "Boosting XGB")) +
   geom_line(aes(y = cum_strategy_return_bagging, color = "Bagging")) +
   geom_line(aes(y = cum_strategy_return_random_forest, color = "Random Forest")) +
   labs(title = "Cumulative Portfolio Returns Using the 50% Rule", y = "Cumulative Return", x = "Date", color = "Model") +
@@ -183,9 +183,9 @@ library(ggplot2)
 ggplot(data, aes(x = date)) +
   geom_line(aes(y = cum_strategy_return_avg_logit, color = "Logit")) +
   geom_line(aes(y = cum_strategy_return_avg_lasso, color = "LASSO Logit")) +
-  #geom_line(aes(y = cum_strategy_return_avg_boosting_gbm, color = "Boosting GBM")) +
+  geom_line(aes(y = cum_strategy_return_avg_boosting_gbm, color = "Boosting GBM")) +
   #geom_line(aes(y = cum_strategy_return_avg_boosting_gbm_sample_mean, color = "Boosting GBM using sample mean")) +
-  geom_line(aes(y = cum_strategy_return_avg_boosting_xgb, color = "Boosting XGB")) +
+  #geom_line(aes(y = cum_strategy_return_avg_boosting_xgb, color = "Boosting XGB")) +
   geom_line(aes(y = cum_strategy_return_avg_bagging, color = "Bagging")) +
   geom_line(aes(y = cum_strategy_return_avg_random_forest, color = "Random Forest")) +
   labs(title = "Cumulative Portfolio Returns Using Sample Average Threshold", y = "Cumulative Return", x = "Date") +
