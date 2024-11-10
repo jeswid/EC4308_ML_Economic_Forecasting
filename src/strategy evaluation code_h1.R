@@ -1,7 +1,9 @@
 #strategy evaluation code
 # Assuming 'data' contains 'predicted_prob_logit_h1' (forecasted probability of bear market)
 # and 'market_state' (actual market state: 0 = Bear, 1 = Bull)
+
 library(tidyverse)
+
 # load predictions from all models
 results_logit <- readRDS("data/logit_predictions.rds") %>%
   filter(!is.na(predicted_prob_logit_h1))
