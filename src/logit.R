@@ -57,6 +57,19 @@ for (start in seq(1, nrow(data) - n_train - n_test + 1)) {
   }
 }
 
+# Join predictions back to the original dataset if desired
+data <- data %>%
+  left_join(predicted_probs_logit_h1_df, by = "date") %>%
+  rename(predicted_prob_logit_h1 = prob) %>%
+  left_join(predicted_probs_logit_h3_df, by = "date") %>%
+  rename(predicted_prob_logit_h3 = prob) %>%
+  left_join(predicted_probs_logit_h6_df, by = "date") %>%
+  rename(predicted_prob_logit_h6 = prob)
+
+# Save predicted values as RDS file
+saveRDS(data, file = "data/logit_predictions.rds")
+
+
 # Final check to ensure predictions are correctly stored
 cat("Final H1 Predictions:", nrow(predicted_probs_logit_h1_df), "\n")
 cat("Final H3 Predictions:", nrow(predicted_probs_logit_h3_df), "\n")
