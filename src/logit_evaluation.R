@@ -23,7 +23,7 @@ eval_model <- function(n) {
   sample_avg_threshold <- mean(data$market_state)  # Calculate sample average of bear markets
   
   data$strategy_return_avg <- ifelse(
-    data[n] < sample_avg_threshold,
+    data[n] > sample_avg_threshold,
     data$ret,
     data$tbl
   )
