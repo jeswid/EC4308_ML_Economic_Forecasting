@@ -118,7 +118,8 @@ ggplot(data, aes(x = date)) +
   geom_line(aes(y = cum_strategy_return_bagging, color = "Bagging")) +
   geom_line(aes(y = cum_strategy_return_random_forest, color = "Random Forest")) +
   labs(title = "Cumulative Portfolio Returns Using the 50% Rule", y = "Cumulative Return", x = "Date", color = "Model") +
-  theme_minimal()
+  theme_minimal() +
+  theme(legend.position = "bottom")
 
 # Use sample average threshold of the training set instead of 50%
 data_full = readRDS("data/final_cleaned_data_with_bull_bear.rds")
@@ -185,9 +186,10 @@ ggplot(data, aes(x = date)) +
   geom_line(aes(y = cum_strategy_return_avg_logit, color = "Logit")) +
   geom_line(aes(y = cum_strategy_return_avg_lasso, color = "LASSO Logit")) +
   #geom_line(aes(y = cum_strategy_return_avg_boosting_gbm, color = "Boosting GBM")) +
-  #geom_line(aes(y = cum_strategy_return_avg_boosting_gbm_sample_mean, color = "Boosting GBM using sample mean")) +
-  geom_line(aes(y = cum_strategy_return_avg_boosting_xgb, color = "Boosting XGB")) +
+  geom_line(aes(y = cum_strategy_return_avg_boosting_gbm_sample_mean, color = "Boosting GBM using sample mean")) +
+  #geom_line(aes(y = cum_strategy_return_avg_boosting_xgb, color = "Boosting XGB")) +
   geom_line(aes(y = cum_strategy_return_avg_bagging, color = "Bagging")) +
   geom_line(aes(y = cum_strategy_return_avg_random_forest, color = "Random Forest")) +
-  labs(title = "Cumulative Portfolio Returns Using Sample Average Threshold", y = "Cumulative Return", x = "Date") +
-  theme_minimal()
+  labs(title = "Cumulative Portfolio Returns Using Sample Average Threshold", y = "Cumulative Return", x = "Date", color = "Model") +
+  theme_minimal() +
+  theme(legend.position = "bottom")

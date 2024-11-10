@@ -45,11 +45,11 @@ for (start in seq(1, 150)) {
 # Join predictions back to the original dataset if desired
 data <- data %>%
   left_join(pred_h1, by = "date") %>%
-  rename(prob_h1 = pred) %>%
+  rename(predicted_prob_logit_h1 = pred) %>%
   left_join(pred_h3, by = "date") %>%
-  rename(prob_h3 = pred) %>%
+  rename(predicted_prob_logit_h3 = pred) %>%
   left_join(pred_h6, by = "date") %>%
-  rename(prob_h6 = pred)
+  rename(predicted_prob_logit_h6 = pred)
 
 # Save predicted values as RDS file
 saveRDS(data, file = "data/logit_predictions.rds")
