@@ -4,43 +4,43 @@
 
 # load predictions from all models
 results_logit <- readRDS("data/logit_predictions.rds") %>%
-  filter(!is.na(predicted_prob_logit_h3))
+  dplyr::filter(!is.na(predicted_prob_logit_h3))
 
 results_lasso <- readRDS("data/lasso_logit_predictions.rds") %>%
   rename(predicted_prob_lasso_h1 = h1_forecast, 
          predicted_prob_lasso_h3 = h3_forecast,
          predicted_prob_lasso_h6 = h6_forecast) %>%
-  filter(!is.na(predicted_prob_lasso_h3))
+  dplyr::filter(!is.na(predicted_prob_lasso_h3))
 
 results_boosting_gbm <- readRDS("data/boosting_gbm_prediction.RDS") %>%
   rename(predicted_prob_boosting_h1 = `1-step ahead forecast`, 
          predicted_prob_boosting_h3 = `3-step ahead forecast`,
          predicted_prob_boosting_h6 = `6-step ahead forecast`) %>%
-  filter(!is.na(predicted_prob_boosting_h3))
+  dplyr::filter(!is.na(predicted_prob_boosting_h3))
 
 results_boosting_gbm_sample_mean <- readRDS("data/boosting_gbm_sample_mean_prediction.RDS") %>%
   rename(predicted_prob_boosting_sample_mean_h1 = `1-step ahead forecast`, 
          predicted_prob_boosting_sample_mean_h3 = `3-step ahead forecast`,
          predicted_prob_boosting_sample_mean_h6 = `6-step ahead forecast`) %>%
-  filter(!is.na(predicted_prob_boosting_sample_mean_h3))
+  dplyr::filter(!is.na(predicted_prob_boosting_sample_mean_h3))
 
 results_boosting_xgb <- readRDS("data/boosting_xgb_prediction.RDS") %>%
   rename(predicted_prob_boosting_xgb_h1 = `1-step ahead forecast`, 
          predicted_prob_boosting_xgb_h3 = `3-step ahead forecast`,
          predicted_prob_boosting_xgb_h6 = `6-step ahead forecast`) %>%
-  filter(!is.na(predicted_prob_boosting_xgb_h3))
+  dplyr::filter(!is.na(predicted_prob_boosting_xgb_h3))
 
 results_bagging <- readRDS("data/bagging_prediction.RDS") %>%
   rename(predicted_prob_bagging_h1 = `1-step ahead predicted probability`, 
          predicted_prob_bagging_h3 = `3-step ahead predicted probability`,
          predicted_prob_bagging_h6 = `6-step ahead predicted probability`) %>%
-  filter(!is.na(predicted_prob_bagging_h3))
+  dplyr::filter(!is.na(predicted_prob_bagging_h3))
 
 results_random_forest <- readRDS("data/randomforest_prediction.RDS") %>%
   rename(predicted_prob_random_forest_h1 = `1-step ahead predicted probability`, 
          predicted_prob_random_forest_h3 = `3-step ahead predicted probability`,
          predicted_prob_random_forest_h6 = `6-step ahead predicted probability`) %>%
-  filter(!is.na(predicted_prob_random_forest_h3))
+  dplyr::filter(!is.na(predicted_prob_random_forest_h3))
 
 data = results_logit %>%
   left_join(results_lasso, by = c("date" = "Date")) %>%
@@ -73,8 +73,8 @@ data$strategy_return_boosting_gbm_sample_mean <- ifelse(
 )
 data$strategy_return_boosting_xgb <- ifelse(
   data$predicted_prob_boosting_xgb_h3 > 0.5,  # Threshold of 0.5 for investment in stocks
-  data$ret,          # Invest in stocks: Use the stock return
-  data$tbl         # Invest in risk-free asset: Use T-bill rate
+  data$original_ret,          # Invest in stocks: Use the stock return
+  data$original_tbl         # Invest in risk-free asset: Use T-bill rate
 )
 data$strategy_return_bagging <- ifelse(
   data$predicted_prob_bagging_h3 > 0.5,  # Threshold of 0.5 for investment in stocks
