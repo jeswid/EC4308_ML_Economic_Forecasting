@@ -7,7 +7,7 @@ eval_model <- function(n) {
   data <- readRDS("data/lasso_logit_predictions.rds")
   data2 <- readRDS("data/final_cleaned_data_with_bull_bear.RDS")
   data <- inner_join(data, data2, by = c("Date" = "DATE"))
-  data$pred_binary <- ifelse(data[[n]] > 0.5, 0, 1)
+  data$pred_binary <- ifelse(data[[n]] > 0.5, 1, 0)
   conmat <- confusionMatrix(data = as.factor(data$pred_binary), reference = as.factor(data$market_state), positive = "1", mode = "everything")
   print(conmat)
 }
