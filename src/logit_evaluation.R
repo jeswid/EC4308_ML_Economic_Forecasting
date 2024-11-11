@@ -19,9 +19,8 @@ eval_model <- function(n) {
   
   conmat <- confusionMatrix(data = data$pred_binary, reference = data$market_state, mode = "everything", positive = "1")
   print(conmat)
-  return(list(strat1_return, strat2_return))
 }
 
-print(eval_model("predicted_prob_logit_h1"))
-print(eval_model("predicted_prob_logit_h3"))
-print(eval_model("predicted_prob_logit_h6"))
+eval_model("predicted_prob_logit_h1")
+eval_model("predicted_prob_logit_h3")
+eval_model("predicted_prob_logit_h6")
