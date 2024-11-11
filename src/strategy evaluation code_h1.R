@@ -124,7 +124,7 @@ ggplot(data, aes(x = date)) +
 # Use sample average threshold of the training set instead of 50%
 data_full = readRDS("data/final_cleaned_data_with_bull_bear.rds")
 data_train = data_full[17:438,]
-sample_avg_threshold <- mean(data_train$market_state)  # Calculate sample average of bear markets
+sample_avg_threshold <- 1-mean(data_train$market_state)  # Calculate sample average of bear markets
 
 data$strategy_return_avg_logit <- ifelse(
   data$predicted_prob_logit_h1 > sample_avg_threshold,
