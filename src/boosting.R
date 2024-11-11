@@ -7,19 +7,25 @@ library(xgboost)
 
 set.seed(123)
 data = readRDS("data/final_cleaned_data_with_bull_bear.RDS")
+
 data$DATE <- as.Date(data$DATE)
 # Sort the data by date
 data <- data[order(data$DATE), ]
 
 data <- data[-(1:17), ]  # align for missing data due to 17 lags of Y
 data = head(data, -6) # remove last 6 rows due to inaccurate market state
+
+#Remove original variables (not differenced)
+data <- data[, !grepl("original", names(data))]
+
 Y = data$market_state
 
 # get date column for test set
 test_date = tail(data$DATE, 150)
 
 # remove DATE column
-data = data %>% select(-DATE)
+data = data %>% select(-DATE) %>%
+  select(-contains("original"))
 
 ntest = 150
 ncrossv = 100 

@@ -6,43 +6,43 @@ library(tidyverse)
 
 # load predictions from all models
 results_logit <- readRDS("data/logit_predictions.rds") %>%
-  filter(!is.na(predicted_prob_logit_h1))
+  dplyr::filter(!is.na(predicted_prob_logit_h1))
 
 results_lasso <- readRDS("data/lasso_logit_predictions.rds") %>%
   rename(predicted_prob_lasso_h1 = h1_forecast, 
          predicted_prob_lasso_h3 = h3_forecast,
          predicted_prob_lasso_h6 = h6_forecast) %>%
-  filter(!is.na(predicted_prob_lasso_h1))
+  dplyr::filter(!is.na(predicted_prob_lasso_h1))
 
 results_boosting_gbm <- readRDS("data/boosting_gbm_prediction.RDS") %>%
   rename(predicted_prob_boosting_h1 = `1-step ahead forecast`, 
          predicted_prob_boosting_h3 = `3-step ahead forecast`,
          predicted_prob_boosting_h6 = `6-step ahead forecast`) %>%
-  filter(!is.na(predicted_prob_boosting_h1))
+  dplyr::filter(!is.na(predicted_prob_boosting_h1))
 
 results_boosting_gbm_sample_mean <- readRDS("data/boosting_gbm_sample_mean_prediction.RDS") %>%
   rename(predicted_prob_boosting_sample_mean_h1 = `1-step ahead forecast`, 
          predicted_prob_boosting_sample_mean_h3 = `3-step ahead forecast`,
          predicted_prob_boosting_sample_mean_h6 = `6-step ahead forecast`) %>%
-  filter(!is.na(predicted_prob_boosting_sample_mean_h1))
+  dplyr::filter(!is.na(predicted_prob_boosting_sample_mean_h1))
 
 results_boosting_xgb <- readRDS("data/boosting_xgb_prediction.RDS") %>%
   rename(predicted_prob_boosting_xgb_h1 = `1-step ahead forecast`, 
          predicted_prob_boosting_xgb_h3 = `3-step ahead forecast`,
          predicted_prob_boosting_xgb_h6 = `6-step ahead forecast`) %>%
-  filter(!is.na(predicted_prob_boosting_xgb_h1))
+  dplyr::filter(!is.na(predicted_prob_boosting_xgb_h1))
 
 results_bagging <- readRDS("data/bagging_prediction.RDS") %>%
   rename(predicted_prob_bagging_h1 = `1-step ahead predicted probability`, 
          predicted_prob_bagging_h3 = `3-step ahead predicted probability`,
          predicted_prob_bagging_h6 = `6-step ahead predicted probability`) %>%
-  filter(!is.na(predicted_prob_bagging_h1))
+  dplyr::filter(!is.na(predicted_prob_bagging_h1))
 
 results_random_forest <- readRDS("data/randomforest_prediction.RDS") %>%
   rename(predicted_prob_random_forest_h1 = `1-step ahead predicted probability`, 
          predicted_prob_random_forest_h3 = `3-step ahead predicted probability`,
          predicted_prob_random_forest_h6 = `6-step ahead predicted probability`) %>%
-  filter(!is.na(predicted_prob_random_forest_h1))
+  dplyr::filter(!is.na(predicted_prob_random_forest_h1))
 
 data = results_logit %>%
   left_join(results_lasso, by = c("date" = "Date")) %>%
@@ -119,7 +119,7 @@ ggplot(data, aes(x = date)) +
   geom_line(aes(y = cum_strategy_return_random_forest, color = "Random Forest")) +
   labs(title = "Cumulative Portfolio Returns Using the 50% Rule For H1", y = "Cumulative Return", x = "Date", color = "Model") +
   theme_minimal() +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom", axis.title.x = element_blank())
 
 # Use sample average threshold of the training set instead of 50%
 data_full = readRDS("data/final_cleaned_data_with_bull_bear.rds")
@@ -192,4 +192,4 @@ ggplot(data, aes(x = date)) +
   geom_line(aes(y = cum_strategy_return_avg_random_forest, color = "Random Forest")) +
   labs(title = "Cumulative Portfolio Returns Using Sample Average Threshold For H1", y = "Cumulative Return", x = "Date", color = "Model") +
   theme_minimal() +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom", axis.title.x = element_blank())

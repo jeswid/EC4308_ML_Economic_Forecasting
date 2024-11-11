@@ -13,6 +13,9 @@ data <- data[order(data$date), ]
 # Remove initial rows and last 6 rows for each horizon dataset
 data <- data[18:(nrow(data) - 6), ]  # Standardize train set with ML model train-test split (cut first 17 rows)
 
+#Remove original variables (not differenced)
+data <- data[, !grepl("original", names(data))]
+
 # Define the test set size and calculate training set size based on available data
 n_test <- 150
 n_train <- nrow(data) - n_test
