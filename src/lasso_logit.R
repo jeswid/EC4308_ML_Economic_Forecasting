@@ -17,6 +17,9 @@ data <- data[-(1:17), ]
 # Remove last 6 due to how two-sided moving average
 data <- data[1:(nrow(data)-6),]
 
+#Remove original variables (not differenced)
+data <- data[, !grepl("original", names(data))]
+
 test_size <- 150
 
 # Initialise dataframe to store predicted probabilities
