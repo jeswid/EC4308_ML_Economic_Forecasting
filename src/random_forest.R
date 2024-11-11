@@ -24,7 +24,8 @@ ntest = 150
 data_X = data %>%
   select(-DATE) %>%
   select(-starts_with("lag")) %>%
-  select(-market_state)
+  select(-market_state) %>%
+  select(-contains("original"))
 
 col_names_X = colnames(data_X)
 
