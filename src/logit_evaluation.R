@@ -15,8 +15,8 @@ eval_model <- function(n) {
   
   data$strategy_return <- ifelse(
     data[[n]] > 0.5,  # Threshold of 0.5 for investment in stocks
-    data$ret,          # Invest in stocks: Use the stock return
-    data$tbl         # Invest in risk-free asset: Use T-bill rate
+    data$original_ret,          # Invest in stocks: Use the stock return
+    data$original_tbl         # Invest in risk-free asset: Use T-bill rate
   )
   
   data$cum_strategy_return <- cumprod(1 + data$strategy_return) - 1
@@ -28,8 +28,8 @@ eval_model <- function(n) {
   
   data$strategy_return_avg <- ifelse(
     data[[n]] > sample_avg_threshold,
-    data$ret,
-    data$tbl
+    data$original_ret,
+    data$original_tbl
   )
   
   data$cum_strategy_return_avg <- cumprod(1 + data$strategy_return_avg) - 1
@@ -45,7 +45,7 @@ eval_model <- function(n) {
   data$pred_binary <- factor(ifelse(data[[n]] < 0.5, 0, 1), levels = c(0, 1))
   data$market_state <- factor(data$market_state, levels = c(0, 1))
   
-  conmat <- confusionMatrix(data = data$pred_binary, reference = data$market_state, mode = "everything")
+  conmat <- confusionMatrix(data = data$pred_binary, reference = data$market_state, mode = "everything", positive = "1")
   print(conmat)
   return(list(strat1_return, strat2_return))
 }
