@@ -55,38 +55,38 @@ data = results_logit %>%
 # Define portfolio strategy based on forecast probabilities
 data$strategy_return_logit <- ifelse(
   data$predicted_prob_logit_h1 > 0.5,  # Threshold of 0.5 for investment in stocks
-  data$ret,          # Invest in stocks: Use the stock return
-  data$tbl         # Invest in risk-free asset: Use T-bill rate
+  data$original_ret,          # Invest in stocks: Use the stock return
+  data$original_tbl         # Invest in risk-free asset: Use T-bill rate
 )
 data$strategy_return_lasso <- ifelse(
   data$predicted_prob_lasso_h1 > 0.5,  # Threshold of 0.5 for investment in stocks
-  data$ret,          # Invest in stocks: Use the stock return
-  data$tbl         # Invest in risk-free asset: Use T-bill rate
+  data$original_ret,          # Invest in stocks: Use the stock return
+  data$original_tbl        # Invest in risk-free asset: Use T-bill rate
 )
 data$strategy_return_boosting_gbm <- ifelse(
   data$predicted_prob_boosting_h1 > 0.5,  # Threshold of 0.5 for investment in stocks
-  data$ret,          # Invest in stocks: Use the stock return
-  data$tbl         # Invest in risk-free asset: Use T-bill rate
+  data$original_ret,          # Invest in stocks: Use the stock return
+  data$original_tbl         # Invest in risk-free asset: Use T-bill rate
 )
 data$strategy_return_boosting_gbm_sample_mean <- ifelse(
   data$predicted_prob_boosting_sample_mean_h1 > 0.5,  # Threshold of 0.5 for investment in stocks
-  data$ret,          # Invest in stocks: Use the stock return
-  data$tbl         # Invest in risk-free asset: Use T-bill rate
+  data$original_ret,          # Invest in stocks: Use the stock return
+  data$original_tbl         # Invest in risk-free asset: Use T-bill rate
 )
 data$strategy_return_boosting_xgb <- ifelse(
   data$predicted_prob_boosting_xgb_h1 > 0.5,  # Threshold of 0.5 for investment in stocks
-  data$ret,          # Invest in stocks: Use the stock return
-  data$tbl         # Invest in risk-free asset: Use T-bill rate
+  data$original_ret,          # Invest in stocks: Use the stock return
+  data$original_tbl         # Invest in risk-free asset: Use T-bill rate
 )
 data$strategy_return_bagging <- ifelse(
   data$predicted_prob_bagging_h1 > 0.5,  # Threshold of 0.5 for investment in stocks
-  data$ret,          # Invest in stocks: Use the stock return
-  data$tbl         # Invest in risk-free asset: Use T-bill rate
+  data$original_ret,          # Invest in stocks: Use the stock return
+  data$original_tbl         # Invest in risk-free asset: Use T-bill rate
 )
 data$strategy_return_random_forest <- ifelse(
   data$predicted_prob_random_forest_h1 > 0.5,  # Threshold of 0.5 for investment in stocks
-  data$ret,          # Invest in stocks: Use the stock return
-  data$tbl         # Invest in risk-free asset: Use T-bill rate
+  data$original_ret,          # Invest in stocks: Use the stock return
+  data$original_tbl         # Invest in risk-free asset: Use T-bill rate
 )
 
 # Calculate cumulative returns from the strategy
@@ -128,38 +128,38 @@ sample_avg_threshold <- 1-mean(data_train$market_state)  # Calculate sample aver
 
 data$strategy_return_avg_logit <- ifelse(
   data$predicted_prob_logit_h1 > sample_avg_threshold,
-  data$ret,
-  data$tbl
+  data$original_ret,          # Invest in stocks: Use the stock return
+  data$original_tbl
 )
 data$strategy_return_avg_lasso <- ifelse(
   data$predicted_prob_lasso_h1 > sample_avg_threshold,
-  data$ret,
-  data$tbl
+  data$original_ret,          # Invest in stocks: Use the stock return
+  data$original_tbl
 )
 data$strategy_return_avg_boosting_gbm <- ifelse(
   data$predicted_prob_boosting_h1 > sample_avg_threshold,
-  data$ret,
-  data$tbl
+  data$original_ret,          # Invest in stocks: Use the stock return
+  data$original_tbl
 )
 data$strategy_return_avg_boosting_sample_mean <- ifelse(
   data$predicted_prob_boosting_sample_mean_h1 > sample_avg_threshold,
-  data$ret,
-  data$tbl
+  data$original_ret,          # Invest in stocks: Use the stock return
+  data$original_tbl
 )
 data$strategy_return_avg_boosting_xgb <- ifelse(
   data$predicted_prob_boosting_xgb_h1 > sample_avg_threshold,
-  data$ret,
-  data$tbl
+  data$original_ret,          # Invest in stocks: Use the stock return
+  data$original_tbl
 )
 data$strategy_return_avg_bagging <- ifelse(
   data$predicted_prob_bagging_h1 > sample_avg_threshold,
-  data$ret,
-  data$tbl
+  data$original_ret,          # Invest in stocks: Use the stock return
+  data$original_tbl
 )
 data$strategy_return_avg_random_forest <- ifelse(
   data$predicted_prob_random_forest_h1 > sample_avg_threshold,
-  data$ret,
-  data$tbl
+  data$original_ret,          # Invest in stocks: Use the stock return
+  data$original_tbl
 )
 
 # Calculate cumulative returns using sample average threshold strategy

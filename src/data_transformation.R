@@ -114,7 +114,8 @@ index_vars_firstdiff <- c("ret", "retx", "svar", "tchi", "AAA", "BAA", "dividend
                           "CPI", "rate_gs10", "UNRATE", "DFF", "INDPRO")
 
 for (x in index_vars_firstdiff) {
-  df[[x]] <- c(NA, diff(df[[x]]))
+  df[[paste0("original_", x)]] <- df[[x]]  # Store original values
+  df[[x]] <- c(NA, diff(df[[x]]))          # Apply first differencing
 }
 
 # update data
