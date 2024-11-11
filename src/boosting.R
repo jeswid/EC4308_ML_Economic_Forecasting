@@ -100,7 +100,7 @@ runboost2_xgb = function(X, y) {
   }
   return(list("model"=temp.boost,"pred"=pred_matrix))
 }
-å
+
 ######################################################################################################################################
 
 # Cross Validation
@@ -129,20 +129,20 @@ boost.rolling.window=function(X,y,d,threshold) {
 }
 
 # GBM with threshold of 0.5
-h1_cv_gbm = boost.rolling.window(X_h1, Y, 5, 0.5)  # bestM = 351, cv_min = 0.14 -- only case where depth=2 has a lower misclassification rate than depth=5, but depth=5 is still chosen to be run on test set for easier comparisons
-h1_cv_gbm2 = boost.rolling.window(X_h1, Y, 2, 0.5)  # bestM = 1137, cv_min = 0.13
-h3_cv_gbm = boost.rolling.window(X_h3, Y, 5, 0.5)  # bestM = 621, cv_min = 0.14
-h3_cv_gbm2 = boost.rolling.window(X_h3, Y, 2, 0.5)  # bestM = 1415, cv_min = 0.14
-h6_cv_gbm = boost.rolling.window(X_h6, Y, 5, 0.5)  # bestM = 465, cv_min = 0.14
-h6_cv_gbm2 = boost.rolling.window(X_h6, Y, 2, 0.5)  # bestM = 1345, cv_min = 0.14
+h1_cv_gbm = boost.rolling.window(X_h1, Y, 5, 0.5)  # bestM = 510, cv_min = 0.07 
+h1_cv_gbm2 = boost.rolling.window(X_h1, Y, 2, 0.5)  # bestM = 1163, cv_min = 0.07
+h3_cv_gbm = boost.rolling.window(X_h3, Y, 5, 0.5)  # bestM = 496, cv_min = 0.07
+h3_cv_gbm2 = boost.rolling.window(X_h3, Y, 2, 0.5)  # bestM = 1231, cv_min = 0.07
+h6_cv_gbm = boost.rolling.window(X_h6, Y, 5, 0.5)  # bestM = 488, cv_min = 0.07
+h6_cv_gbm2 = boost.rolling.window(X_h6, Y, 2, 0.5)  # bestM = 944, cv_min = 0.07
 
 # GBM using sample mean as threshold
 y_train = head(Y, ntrain)
 y_sample_mean = mean(y_train)
 
-h1_cv_gbm_mean = boost.rolling.window(X_h1, Y, 5, y_sample_mean) # bestM = 696, cv_min = 0.14
-h3_cv_gbm_mean = boost.rolling.window(X_h3, Y, 5, y_sample_mean) # bestM = 729, cv_min = 0.14
-h6_cv_gbm_mean = boost.rolling.window(X_h6, Y, 5, y_sample_mean) # bestM = 578, cv_min = 0.14
+h1_cv_gbm_mean = boost.rolling.window(X_h1, Y, 5, y_sample_mean) # bestM = 926, cv_min = 0.07
+h3_cv_gbm_mean = boost.rolling.window(X_h3, Y, 5, y_sample_mean) # bestM = 1000, cv_min = 0.07
+h6_cv_gbm_mean = boost.rolling.window(X_h6, Y, 5, y_sample_mean) # bestM = 805, cv_min = 0.07
 
 
 boostxgb.rolling.window=function(X,y,d,threshold) {
@@ -169,12 +169,12 @@ boostxgb.rolling.window=function(X,y,d,threshold) {
 }
 
 # xgb using threshold of 0.5
-h1_cv_xgb = boostxgb.rolling.window(X_h1, Y, 5, 0.5) # bestM = 40, cv_min = 0.14
-h1_cv_xgb2 = boostxgb.rolling.window(X_h1, Y, 2, 0.5) # bestM = 886, cv_min = 0.14
-h3_cv_xgb= boostxgb.rolling.window(X_h3, Y, 5, 0.5) # bestM = 174, cv_min = 0.13
-h3_cv_xgb2 = boostxgb.rolling.window(X_h3, Y, 2, 0.5) # bestM = 1052, cv_min = 0.14
-h6_cv_xgb = boostxgb.rolling.window(X_h6, Y, 5, 0.5) # bestM = 65, cv_min = 0.14
-h6_cv_xgb2 = boostxgb.rolling.window(X_h6, Y, 2, 0.5) # bestM = 1034, cv_min = 0.14
+h1_cv_xgb = boostxgb.rolling.window(X_h1, Y, 5, 0.5) # bestM = 174, cv_min = 0.07
+h1_cv_xgb2 = boostxgb.rolling.window(X_h1, Y, 2, 0.5) # bestM = 725, cv_min = 0.07
+h3_cv_xgb= boostxgb.rolling.window(X_h3, Y, 5, 0.5) # bestM = 179, cv_min = 0.07
+h3_cv_xgb2 = boostxgb.rolling.window(X_h3, Y, 2, 0.5) # bestM = 1003, cv_min = 0.07
+h6_cv_xgb = boostxgb.rolling.window(X_h6, Y, 5, 0.5) # bestM = 145, cv_min = 0.07
+h6_cv_xgb2 = boostxgb.rolling.window(X_h6, Y, 2, 0.5) # bestM = 980, cv_min = 0.07
 
 
 ######################################################################################################################################
