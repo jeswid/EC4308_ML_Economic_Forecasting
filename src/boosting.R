@@ -145,13 +145,13 @@ h6_cv_gbm2 = boost.rolling.window(X_h6, Y, 2, 0.5)  # bestM = 944, cv_min = 0.07
 # GBM using sample mean as threshold
 y_train = head(Y, ntrain)
 y_sample_mean = mean(y_train)
-threshold = 1-y_sample_mean
+threshold = 1-y_sample_mean # probability of bear market
 
 h1_cv_gbm_mean = boost.rolling.window(X_h1, Y, 5, threshold) # bestM = 952, cv_min = 0.07
 h3_cv_gbm_mean = boost.rolling.window(X_h3, Y, 5, threshold) # bestM = 1058, cv_min = 0.07
 h6_cv_gbm_mean = boost.rolling.window(X_h6, Y, 5, threshold) # bestM = 1090, cv_min = 0.07
 
-
+# using xgb package
 boostxgb.rolling.window=function(X,y,d,threshold) {
   X_CV = head(X, ntrain+ncrossv)   # remove test set
   y_cv = head(Y, ntrain+ncrossv)
@@ -229,6 +229,7 @@ boost_test.rolling.window = function(X, y, n, package) {
   }
   return(list("pred"=test_boost, "save.importance"=save.importance))
 }
+
 
 # Test -- GBM with threshold of 0.5
 test_result <- data.frame(matrix(NA, nrow = 150, ncol = 3))
@@ -339,7 +340,7 @@ df_plot = rbind(mean_importance, mean_importance_h3, mean_importance_h6) %>%
 saveRDS(df_plot, file = "data/boosting_gbm_importance.RDS")
 
 
-# df_plot = readRDS("data/boosting_gbm_importance.RDS")
+# df_plot = readRDS("data/boosting_gbm_importance.RDS") # if want to see plot directly
 ggplot(df_plot, aes(x = factor(horizon), y = average_importance, fill = group)) + 
   geom_bar(stat = "identity", position = "stack") +  # Stack bars by horizon
   geom_text(aes(label = round(average_importance, 2)), 
