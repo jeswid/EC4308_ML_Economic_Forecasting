@@ -53,4 +53,3 @@ data <- data %>%
 
 # Save predicted values as RDS file
 saveRDS(data, file = "data/logit_predictions.rds")
-
