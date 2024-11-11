@@ -227,11 +227,11 @@ boost_test.rolling.window = function(X, y, n, package) {
 test_result <- data.frame(matrix(NA, nrow = 150, ncol = 3))
 colnames(test_result) <- c("1-step ahead forecast", "3-step ahead forecast", "6-step ahead forecast")
 
-h1_test_gbm = boost_test.rolling.window(X_h1, Y, h1_cv_gbm$bestM, "gbm") #bestM=351
+h1_test_gbm = boost_test.rolling.window(X_h1, Y, h1_cv_gbm$bestM, "gbm") #bestM=510
 test_result$`1-step ahead forecast` = h1_test_gbm$pred
-h3_test_gbm = boost_test.rolling.window(X_h3, Y, h3_cv_gbm$bestM, "gbm") #bestM=621
+h3_test_gbm = boost_test.rolling.window(X_h3, Y, h3_cv_gbm$bestM, "gbm") #bestM=496
 test_result$`3-step ahead forecast` = h3_test_gbm$pred
-h6_test_gbm = boost_test.rolling.window(X_h6, Y, h6_cv_gbm$bestM, "gbm") #bestM=465
+h6_test_gbm = boost_test.rolling.window(X_h6, Y, h6_cv_gbm$bestM, "gbm") #bestM=488
 test_result$`6-step ahead forecast` = h6_test_gbm$pred
 
 # save result
@@ -243,11 +243,11 @@ saveRDS(test_result, file = "data/boosting_gbm_prediction.RDS")
 test_result_sample_mean <- data.frame(matrix(NA, nrow = 150, ncol = 3))
 colnames(test_result_sample_mean) <- c("1-step ahead forecast", "3-step ahead forecast", "6-step ahead forecast")
 
-h1_test_gbm_mean = boost_test.rolling.window(X_h1, Y, h1_cv_gbm_mean$bestM, "gbm") # bestM = 696
+h1_test_gbm_mean = boost_test.rolling.window(X_h1, Y, h1_cv_gbm_mean$bestM, "gbm") # bestM = 926
 test_result_sample_mean$`1-step ahead forecast` = h1_test_gbm_mean$pred
-h3_test_gbm_mean = boost_test.rolling.window(X_h3, Y, h3_cv_gbm_mean$bestM, "gbm") # bestM = 729
+h3_test_gbm_mean = boost_test.rolling.window(X_h3, Y, h3_cv_gbm_mean$bestM, "gbm") # bestM = 1000
 test_result_sample_mean$`3-step ahead forecast` = h3_test_gbm_mean$pred
-h6_test_gbm_mean = boost_test.rolling.window(X_h6, Y, h6_cv_gbm_mean$bestM, "gbm") # bestM = 578
+h6_test_gbm_mean = boost_test.rolling.window(X_h6, Y, h6_cv_gbm_mean$bestM, "gbm") # bestM = 805
 test_result_sample_mean$`6-step ahead forecast` = h6_test_gbm_mean$pred
 
 # save result
@@ -260,11 +260,11 @@ test_result_xgb <- data.frame(matrix(NA, nrow = 150, ncol = 3))
 colnames(test_result_xgb) <- c("1-step ahead forecast", "3-step ahead forecast", "6-step ahead forecast")
 
 
-h1_test_xgb = boost_test.rolling.window(X_h1, Y, h1_cv_xgb$bestM, "xgb") # bestM = 40
+h1_test_xgb = boost_test.rolling.window(X_h1, Y, h1_cv_xgb$bestM, "xgb") # bestM = 174
 test_result_xgb$`1-step ahead forecast` = h1_test_xgb$pred
-h3_test_xgb = boost_test.rolling.window(X_h3, Y, h3_cv_xgb$bestM, "xgb") # bestM = 174
+h3_test_xgb = boost_test.rolling.window(X_h3, Y, h3_cv_xgb$bestM, "xgb") # bestM = 179
 test_result_xgb$`3-step ahead forecast` = h3_test_xgb$pred
-h6_test_xgb = boost_test.rolling.window(X_h6, Y, h6_cv_xgb$bestM, "xgb") # bestM = 65
+h6_test_xgb = boost_test.rolling.window(X_h6, Y, h6_cv_xgb$bestM, "xgb") # bestM = 145
 test_result_xgb$`6-step ahead forecast` = h6_test_xgb$pred
 
 # Save result
