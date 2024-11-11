@@ -97,17 +97,17 @@ data$cum_strategy_return_bagging <- cumprod(1 + data$strategy_return_bagging) - 
 data$cum_strategy_return_random_forest <- cumprod(1 + data$strategy_return_random_forest) - 1
 
 # Print summary statistics of the strategies
-summary(data$cum_strategy_return_logit)
-summary(data$cum_strategy_return_lasso)
-summary(data$cum_strategy_return_boosting_gbm)
-summary(data$cum_strategy_return_boosting_gbm_sample_mean)
-summary(data$cum_strategy_return_boosting_xgb)
-summary(data$cum_strategy_return_bagging)
-summary(data$cum_strategy_return_random_forest)
+print(summary(data$cum_strategy_return_logit))
+print(summary(data$cum_strategy_return_lasso))
+print(summary(data$cum_strategy_return_bagging))
+print(summary(data$cum_strategy_return_random_forest))
+print(summary(data$cum_strategy_return_boosting_gbm))
+print(summary(data$cum_strategy_return_boosting_gbm_sample_mean))
+print(summary(data$cum_strategy_return_boosting_xgb))
 
 # Plotting cumulative returns
 library(ggplot2)
-ggplot(data, aes(x = date)) +
+p1 <- ggplot(data, aes(x = date)) +
   geom_line(aes(y = cum_strategy_return_logit, color = "Logit")) +
   geom_line(aes(y = cum_strategy_return_lasso, color = "LASSO Logit")) +
   #geom_line(aes(y = cum_strategy_return_boosting_gbm, color = "Boosting GBM")) +
@@ -170,17 +170,17 @@ data$cum_strategy_return_avg_bagging <- cumprod(1 + data$strategy_return_avg_bag
 data$cum_strategy_return_avg_random_forest <- cumprod(1 + data$strategy_return_avg_random_forest) - 1
 
 # Print summary statistics of the strategies
-summary(data$cum_strategy_return_avg_logit)
-summary(data$cum_strategy_return_avg_lasso)
-summary(data$cum_strategy_return_avg_boosting_gbm)
-summary(data$cum_strategy_return_avg_boosting_gbm_sample_mean)
-summary(data$cum_strategy_return_avg_boosting_xgb)
-summary(data$cum_strategy_return_avg_bagging)
-summary(data$cum_strategy_return_avg_random_forest)
+print(summary(data$cum_strategy_return_avg_logit))
+print(summary(data$cum_strategy_return_avg_lasso))
+print(summary(data$cum_strategy_return_avg_bagging))
+print(summary(data$cum_strategy_return_avg_random_forest))
+print(summary(data$cum_strategy_return_avg_boosting_gbm))
+print(summary(data$cum_strategy_return_avg_boosting_gbm_sample_mean))
+print(summary(data$cum_strategy_return_avg_boosting_xgb))
 
 # Plotting cumulative returns
 library(ggplot2)
-ggplot(data, aes(x = date)) +
+p2 <- ggplot(data, aes(x = date)) +
   geom_line(aes(y = cum_strategy_return_avg_logit, color = "Logit")) +
   geom_line(aes(y = cum_strategy_return_avg_lasso, color = "LASSO Logit")) +
   #geom_line(aes(y = cum_strategy_return_avg_boosting_gbm, color = "Boosting GBM")) +
@@ -188,6 +188,9 @@ ggplot(data, aes(x = date)) +
   geom_line(aes(y = cum_strategy_return_avg_boosting_xgb, color = "Boosting XGB")) +
   geom_line(aes(y = cum_strategy_return_avg_bagging, color = "Bagging")) +
   geom_line(aes(y = cum_strategy_return_avg_random_forest, color = "Random Forest")) +
-  labs(title = "Cumulative Portfolio Returns Using Sample Average Threshold For H3", y = "Cumulative Return", x = "Date") +
+  labs(title = "Cumulative Portfolio Returns Using Sample Average Threshold For H3", y = "Cumulative Return", x = "Date", color = "Model") +
   theme_minimal() +
   theme(legend.position = "bottom", axis.title.x = element_blank())
+
+print(p1)
+print(p2)
